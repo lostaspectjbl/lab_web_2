@@ -1,116 +1,94 @@
-<%- include('partials/header', { title: post.title + ' — The Security Dispatch', currentLab: 'lab08' }) %>
+<%- include('partials/header', { title: post.title + ' — ByteNote', currentPage: 'articles' }) %>
 
 <div class="page-wrap">
-  <div class="main-col">
-
-    <div class="lab-context">
-      <div class="lab-context-eyebrow">Lab 08 &mdash; Stored XSS</div>
-      <div class="lab-context-title">Stored XSS into anchor href attribute with double quotes HTML-encoded</div>
-      <div class="lab-context-desc">
-        The comment form has a Website field. Its value is stored and used as the <code>href</code> attribute of the
-        commenter's name link. Double quotes (<code>"</code>) are encoded, but the URL scheme is not validated —
-        a <code>javascript:</code> URI executes when the link is clicked.
-      </div>
-    </div>
-
-    <article>
-      <header class="article-header">
-        <span class="article-category">Security Research</span>
-        <h1 class="article-title"><%= post.title %></h1>
-        <div class="article-meta">
-          <span><%= post.author %></span>
-          <span class="sep">&mdash;</span>
-          <span><%= post.created_at %></span>
-        </div>
-      </header>
-      <div class="article-body">
-        <p><%= post.content %></p>
-      </div>
-    </article>
-
-    <hr class="divider">
-
-    <section>
-      <div class="flex-between mb-md">
-        <div class="section-header" style="margin-bottom:0; border:none; padding:0;">
-          Comments (<%= comments.length %>)
-        </div>
-        <form action="/lab08/reset" method="POST">
-          <button type="submit" class="btn btn-danger">Reset Comments</button>
-        </form>
-      </div>
-
-      <div class="comment-list">
-        <% if (comments.length === 0) { %>
-          <p class="empty-state">No comments yet.</p>
-        <% } else { %>
-          <% comments.forEach(comment => { %>
-            <div class="comment-item">
-              <div class="comment-byline">
-                <span class="comment-author">
-                  <% if (comment.website) { %>
-                    <!-- VULNERABLE SINK: href attribute; double quotes encoded, scheme not validated -->
-                    <a href="<%- comment.website %>"><%= comment.author %></a>
-                  <% } else { %>
-                    <%= comment.author %>
-                  <% } %>
-                </span>
-                <span class="comment-date"><%= comment.created_at %></span>
-              </div>
-              <!-- Comment body is safely encoded -->
-              <div class="comment-body"><%= comment.content %></div>
-            </div>
-          <% }); %>
-        <% } %>
-      </div>
-
-      <div class="form-section-title">Leave a Comment</div>
-
-      <form action="/lab08/comment" method="POST">
-        <input type="hidden" name="postId" value="<%= post.id %>">
-        <div class="form-block">
-          <label class="form-label" for="author08">Name</label>
-          <input type="text" id="author08" name="author" class="form-input" placeholder="Your name" required maxlength="100">
-        </div>
-        <div class="form-block">
-          <label class="form-label" for="website08">Website <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-          <input type="text" id="website08" name="website" class="form-input" placeholder="https://yoursite.com">
-          <div class="form-hint">Your name will become a link pointing to this URL.</div>
-        </div>
-        <div class="form-block">
-          <label class="form-label" for="content08">Comment</label>
-          <textarea id="content08" name="content" class="form-textarea" placeholder="Write your comment..." required rows="4"></textarea>
-        </div>
-        <div class="mt-sm">
-          <button type="submit" class="btn btn-primary">Post Comment</button>
-        </div>
-      </form>
-    </section>
-
+  <div class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/articles">Articles</a>
+    <span class="breadcrumb-sep">/</span>
+    <span><%= post.title %></span>
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">About This Lab</div>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        The website URL is stored verbatim (with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">"</code> encoded) and reflected into an <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">href</code>. Submit <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">javascript:alert(1)</code> as the website.
-      </p>
+
+  <article>
+    <div class="article-header">
+      <a href="/articles" class="article-category-tag"><%= post.category %></a>
+      <h1 class="article-title"><%= post.title %></h1>
+      <div class="article-meta-row">
+        <div class="article-author-info">
+          <span class="author-avatar avatar-<%= post.author_key || 'a' %>" style="font-size:0.75rem;width:30px;height:30px;">
+            <%= post.author.charAt(0) %>
+          </span>
+          <span class="article-author-name"><%= post.author %></span>
+        </div>
+        <span><%= post.read_time %> min read</span>
+        <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+      </div>
     </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
+
+    <div class="article-body">
+      <%- post.content %>
     </div>
-  </aside>
+
+    <div class="tag-list" style="margin-top:2rem;">
+      <a href="/articles" class="tag">Web Security</a>
+      <a href="/articles" class="tag"><%= post.category %></a>
+    </div>
+  </article>
+
+  <hr class="divider">
+
+  <!-- Comments Section — stored XSS via website href field -->
+  <div class="comments-section">
+    <h2 class="comments-title"><%= comments.length %> Comment<%= comments.length !== 1 ? 's' : '' %></h2>
+
+    <% if (comments.length > 0) { %>
+    <ul class="comment-list">
+      <% comments.forEach(function(c, i) {
+           const avatarColors = ['avatar-a','avatar-b','avatar-c','avatar-d','avatar-e'];
+           const avClass = avatarColors[i % avatarColors.length];
+           const initials = c.author.split(' ').map(w=>w[0]).join('').slice(0,2);
+      %>
+      <li class="comment-item">
+        <div class="comment-avatar <%= avClass %>"><%= initials %></div>
+        <div class="comment-body">
+          <div class="comment-header">
+            <span class="comment-author">
+              <% if (c.website) { %>
+                <a href="<%- c.website %>" target="_blank" rel="noopener"><%= c.author %></a>
+              <% } else { %>
+                <%= c.author %>
+              <% } %>
+            </span>
+            <span class="comment-date"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+          </div>
+          <div class="comment-text"><%= c.content %></div>
+        </div>
+      </li>
+      <% }); %>
+    </ul>
+    <% } %>
+
+    <% if (typeof message !== 'undefined' && message) { %>
+      <div class="alert alert-success"><%= message %></div>
+    <% } %>
+
+    <div class="comment-form-title">Leave a Comment</div>
+    <form action="/lab08/comment" method="POST">
+      <div class="form-group">
+        <label for="author">Name</label>
+        <input type="text" id="author" name="author" placeholder="Your name" required maxlength="80">
+      </div>
+      <div class="form-group">
+        <label for="website">Website <span class="form-hint">(optional)</span></label>
+        <input type="text" id="website" name="website" placeholder="https://yoursite.com" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label for="content">Comment</label>
+        <textarea id="content" name="content" placeholder="Share your thoughts..." required maxlength="1000"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+  </div>
 </div>
 
 <%- include('partials/footer') %>

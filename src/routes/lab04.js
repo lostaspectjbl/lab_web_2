@@ -3,28 +3,29 @@ const router = express.Router();
 const { db } = require('../db');
 const config = require('../config');
 
+// Lab 04: DOM XSS via innerHTML — search page with dynamic results banner
 router.get('/', (req, res) => {
-  // Set lab flag cookie for CTF challenge verification
   res.cookie('flag', config.flags.lab04, {
     httpOnly: false,
     path: '/lab04',
     sameSite: 'lax'
   });
 
-  const search = req.query.search !== undefined ? String(req.query.search) : null;
-  let results = [];
+  const search = req.query.search !== undefined ? String(req.query.search) : '';
 
-  if (search !== null && search.trim() !== '') {
-    // Strictly parameterized SQL query
-    const stmt = db.prepare('SELECT id, title, content FROM posts WHERE title LIKE ? OR content LIKE ?');
+  let posts = [];
+  if (search.trim() !== '') {
     const term = `%${search}%`;
-    results = stmt.all(term, term);
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY id DESC'
+    ).all(term, term);
+  } else {
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts ORDER BY id DESC'
+    ).all();
   }
 
-  res.render('lab04', {
-    search,
-    results
-  });
+  res.render('lab04', { search, posts });
 });
 
 module.exports = router;

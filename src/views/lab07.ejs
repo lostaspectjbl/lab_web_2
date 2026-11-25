@@ -1,75 +1,56 @@
-<%- include('partials/header', { title: 'Search — The Security Dispatch', currentLab: 'lab07' }) %>
+<%- include('partials/header', { title: 'Search — ByteNote', currentPage: '' }) %>
 
-<div class="page-wrap">
-  <div class="main-col">
-
-    <div class="lab-context">
-      <div class="lab-context-eyebrow">Lab 07 &mdash; Reflected XSS</div>
-      <div class="lab-context-title">Reflected XSS into attribute with angle brackets HTML-encoded</div>
-      <div class="lab-context-desc">
-        The search term is reflected into the <code>value</code> attribute of the input field.
-        The server encodes <code>&lt;</code> and <code>&gt;</code> but leaves quotation marks unhandled,
-        allowing you to break out of the attribute and inject an event handler.
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="page-header">
+        <div class="page-header-eyebrow">Search</div>
+        <h1>Search Articles</h1>
       </div>
-    </div>
 
-    <form action="/lab07" method="GET" class="search-form">
-      <!-- VULNERABLE: value attribute contains user input with angle brackets encoded but quotes intact -->
-      <input
-        type="text"
-        name="search"
-        placeholder="Search articles..."
-        value="<%- search !== null ? search : '' %>"
-        class="search-input"
-        autocomplete="off"
-      >
-      <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
-    <% if (search !== null) { %>
-      <div class="search-results-notice">
-        Showing results for <strong><%= search %></strong> &mdash; <%= results.length %> article(s) found.
+      <div class="search-hero">
+        <div class="search-label">What are you looking for?</div>
+        <!-- search input reflects into value attribute; angle brackets encoded, quotes not -->
+        <form class="search-hero-form" action="/lab07" method="get" autocomplete="off">
+          <input type="text" name="search" placeholder="Search articles, topics, authors..." value="<%- search %>">
+          <button type="submit">Search</button>
+        </form>
       </div>
-      <% if (results.length > 0) { %>
-        <div class="post-list">
-          <% results.forEach(post => { %>
-            <div class="post-card">
-              <div class="post-card-title"><%= post.title %></div>
-              <div class="post-card-desc"><%= post.content.substring(0, 160) %>...</div>
+
+      <% if (typeof search !== 'undefined' && search !== '') { %>
+      <div class="blog-list" style="margin-top:1.5rem;">
+        <% if (posts && posts.length > 0) { %>
+          <% posts.forEach(function(post) { %>
+          <div class="blog-list-item">
+            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+            <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+            <div class="blog-list-excerpt"><%= post.excerpt %></div>
+            <div class="blog-list-meta">
+              <span><%= post.author %></span>
+              <span>&middot;</span>
+              <span><%= post.read_time %> min read</span>
             </div>
+          </div>
           <% }); %>
-        </div>
-      <% } else { %>
-        <p class="empty-state">No articles matched your search query.</p>
+        <% } else { %>
+          <div class="search-no-results">No articles found. Try a different search term.</div>
+        <% } %>
+      </div>
       <% } %>
-    <% } else { %>
-      <p class="empty-state">Use the search box above to find articles.</p>
-    <% } %>
+    </main>
 
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/lab07?search=xss" class="tag">XSS</a>
+          <a href="/lab07?search=csp" class="tag">CSP</a>
+          <a href="/lab07?search=dom" class="tag">DOM Security</a>
+          <a href="/lab07?search=encoding" class="tag">Output Encoding</a>
+        </div>
+      </div>
+    </aside>
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">About This Lab</div>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        The sink is the HTML <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">value</code> attribute. Use an unencoded quote to escape the attribute and add an event handler such as <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">onfocus</code> with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">autofocus</code>.
-      </p>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
-    </div>
-  </aside>
 </div>
 
 <%- include('partials/footer') %>

@@ -3,31 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title || 'The Security Dispatch' %></title>
+  <title><%= title || 'ByteNote — Cybersecurity & Web Technology' %></title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
 <header class="masthead">
   <div class="masthead-inner">
-    <a href="/" class="site-name">
-      The Security Dispatch<span>CTF Lab</span>
+    <a href="/" class="site-logo">
+      <span class="site-logo-name">ByteNote</span>
+      <span class="site-logo-tld">Blog</span>
     </a>
     <nav>
       <ul class="nav-primary">
-        <li><a href="/" class="<%= currentLab === 'home' ? 'is-active' : '' %>">Home</a></li>
-        <li><a href="/lab01" class="<%= currentLab === 'lab01' ? 'is-active' : '' %>">Lab 01</a></li>
-        <li><a href="/lab02" class="<%= currentLab === 'lab02' ? 'is-active' : '' %>">Lab 02</a></li>
-        <li><a href="/lab03" class="<%= currentLab === 'lab03' ? 'is-active' : '' %>">Lab 03</a></li>
-        <li><a href="/lab04" class="<%= currentLab === 'lab04' ? 'is-active' : '' %>">Lab 04</a></li>
-        <li><a href="/lab05" class="<%= currentLab === 'lab05' ? 'is-active' : '' %>">Lab 05</a></li>
-        <li><a href="/lab06" class="<%= currentLab === 'lab06' ? 'is-active' : '' %>">Lab 06</a></li>
-        <li><a href="/lab07" class="<%= currentLab === 'lab07' ? 'is-active' : '' %>">Lab 07</a></li>
-        <li><a href="/lab08" class="<%= currentLab === 'lab08' ? 'is-active' : '' %>">Lab 08</a></li>
-        <li><a href="/lab09" class="<%= currentLab === 'lab09' ? 'is-active' : '' %>">Lab 09</a></li>
-        <li><a href="/lab10" class="<%= currentLab === 'lab10' ? 'is-active' : '' %>">Lab 10</a></li>
-        <li><a href="/helper" class="nav-helper-link <%= currentLab === 'helper' ? 'is-active' : '' %>">Helper</a></li>
+        <li><a href="/" class="<%= (typeof currentPage !== 'undefined' && currentPage === 'home') ? 'is-active' : '' %>">Home</a></li>
+        <li><a href="/articles" class="<%= (typeof currentPage !== 'undefined' && currentPage === 'articles') ? 'is-active' : '' %>">Articles</a></li>
+        <li><a href="/shop" class="<%= (typeof currentPage !== 'undefined' && currentPage === 'shop') ? 'is-active' : '' %>">Shop</a></li>
+        <li><a href="/about" class="<%= (typeof currentPage !== 'undefined' && currentPage === 'about') ? 'is-active' : '' %>">About</a></li>
+        <li><a href="/contact" class="<%= (typeof currentPage !== 'undefined' && currentPage === 'contact') ? 'is-active' : '' %>">Contact</a></li>
       </ul>
     </nav>
+    <div class="nav-search">
+      <form action="/search" method="get" autocomplete="off">
+        <input type="search" name="q" placeholder="Search articles..." value="<%= (typeof navSearch !== 'undefined') ? navSearch : '' %>">
+        <button type="submit">Search</button>
+      </form>
+    </div>
   </div>
 </header>

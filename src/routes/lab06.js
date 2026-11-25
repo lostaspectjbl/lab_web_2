@@ -3,16 +3,17 @@ const router = express.Router();
 const { db } = require('../db');
 const config = require('../config');
 
+// Lab 06: DOM XSS in jQuery hashchange selector — Blog archive page
 router.get('/', (req, res) => {
-  // Set lab flag cookie for CTF challenge verification
   res.cookie('flag', config.flags.lab06, {
     httpOnly: false,
     path: '/lab06',
     sameSite: 'lax'
   });
 
-  // Parameterized query to retrieve blog posts
-  const posts = db.prepare('SELECT id, title, content, author, created_at FROM posts ORDER BY id ASC').all();
+  const posts = db.prepare(
+    'SELECT id, title, slug, category, excerpt, author, read_time, created_at FROM posts ORDER BY id ASC'
+  ).all();
 
   res.render('lab06', {
     posts,

@@ -12,19 +12,22 @@ router.get('/', (req, res) => {
   });
 
   const search = req.query.search !== undefined ? String(req.query.search) : null;
-  let results = [];
 
+  // Fetch posts for the sidebar and results list
+  let posts = [];
   if (search !== null && search.trim() !== '') {
-    // Strictly parameterized SQL query to ensure no accidental SQLi
-    const stmt = db.prepare('SELECT id, title, content FROM posts WHERE title LIKE ? OR content LIKE ?');
+    // Strictly parameterized SQL query — no SQLi possible
     const term = `%${search}%`;
-    results = stmt.all(term, term);
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY id DESC'
+    ).all(term, term);
   }
 
-  res.render('lab01', {
-    search,
-    results
-  });
+  const recent = db.prepare(
+    'SELECT id, title, author, read_time FROM posts ORDER BY id DESC LIMIT 5'
+  ).all();
+
+  res.render('lab01', { search, posts, recent });
 });
 
 module.exports = router;

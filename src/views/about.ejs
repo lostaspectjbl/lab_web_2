@@ -1,0 +1,56 @@
+<%- include('partials/header', { title: 'About — ByteNote', currentPage: 'about' }) %>
+
+<div class="page-wrap">
+  <div class="about-hero">
+    <h1>About ByteNote</h1>
+    <p>ByteNote is an independent publication covering cybersecurity research, web technology, and application security. Founded in 2019, we publish original research, practical tutorials, and in-depth analysis written by working practitioners.</p>
+  </div>
+
+  <div class="page-header" style="border-bottom:none; padding-bottom:0; margin-bottom:1.5rem;">
+    <div class="page-header-eyebrow">Mission</div>
+    <h1>Making Security Knowledge Accessible</h1>
+  </div>
+
+  <div class="article-body">
+    <p>Web application security is a discipline where incomplete knowledge is dangerous. A developer who understands that SQL injection exists but does not understand parameterized queries will implement them incorrectly. A security engineer who knows that XSS is "about scripts" but cannot articulate the difference between HTML, attribute, JavaScript, and URL contexts will miss real vulnerabilities.</p>
+    <p>ByteNote exists to close those gaps. Every article we publish is written with the goal of leaving the reader meaningfully better equipped to build or test secure software — not just aware that a problem exists.</p>
+
+    <h2 id="authors">Our Authors</h2>
+  </div>
+
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar avatar-a">AC</div>
+      <div class="team-name">Alice Chen</div>
+      <div class="team-role">Security Researcher</div>
+      <div class="team-bio">Alice focuses on web application security research. She has discovered and reported vulnerabilities in major open-source projects and regularly speaks at security conferences.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar avatar-b">MW</div>
+      <div class="team-name">Marcus Webb</div>
+      <div class="team-role">Penetration Tester</div>
+      <div class="team-bio">Marcus leads a red team at a mid-size consulting firm. His writing draws on years of real-world assessment experience across industries from fintech to healthcare.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar avatar-d">DO</div>
+      <div class="team-name">David Okafor</div>
+      <div class="team-role">Web Developer & Security Advocate</div>
+      <div class="team-bio">David spent a decade building web applications before specializing in developer-focused security education. He writes about practical secure coding techniques.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar avatar-e">SK</div>
+      <div class="team-name">Sarah Kim</div>
+      <div class="team-role">Application Security Engineer</div>
+      <div class="team-bio">Sarah builds security tooling and automation for a large engineering organization. She writes about scaling security practices across large development teams.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="article-body">
+    <h2>Contact</h2>
+    <p>For article pitches, corrections, or general inquiries, use the <a href="/contact">contact form</a>. For security vulnerability disclosures about ByteNote itself, email security@bytenote.example directly.</p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

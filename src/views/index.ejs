@@ -1,72 +1,158 @@
-<%- include('partials/header', { title: 'The Security Dispatch — XSS Lab Series', currentLab: 'home' }) %>
+<%- include('partials/header', { title: 'ByteNote — Cybersecurity & Web Technology', currentPage: 'home' }) %>
 
 <div class="page-wrap wide">
-  <div class="main-col">
+  <div class="layout-cols">
+    <!-- Main column -->
+    <main>
 
-    <div class="home-hero">
-      <div class="home-hero-eyebrow">Web Application Security Training</div>
-      <h1 class="home-hero-title">Cross-Site Scripting Lab Series</h1>
-      <p class="home-hero-desc">
-        A series of deliberately vulnerable web challenges covering Reflected, Stored, and DOM-based
-        Cross-Site Scripting. Designed for CTF competitions and isolated training environments.
-      </p>
-    </div>
-
-    <div class="section-header">All Challenges</div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-
-      <% const labs = [
-        { num: '01', href: '/lab01', type: 'Reflected XSS', title: 'Reflected XSS into HTML context with nothing encoded', desc: 'The search feature reflects raw user input directly into the HTML response without any encoding.' },
-        { num: '02', href: '/lab02', type: 'Stored XSS', title: 'Stored XSS into HTML context with nothing encoded', desc: 'A comment section stores user input in the database and renders it back without output encoding.' },
-        { num: '03', href: '/lab03', type: 'DOM-based XSS', title: 'DOM XSS in document.write sink using location.search', desc: 'A client-side analytics tracker writes an image element using document.write from location.search.' },
-        { num: '04', href: '/lab04', type: 'DOM-based XSS', title: 'DOM XSS in innerHTML sink using location.search', desc: 'A dynamic search banner populates a DOM element via innerHTML from the query parameter.' },
-        { num: '05', href: '/lab05', type: 'DOM-based XSS', title: 'DOM XSS in jQuery anchor href sink using location.search', desc: 'A feedback page sets the Back button href via jQuery .attr() from the returnPath parameter without scheme validation.' },
-        { num: '06', href: '/lab06', type: 'DOM-based XSS', title: 'DOM XSS in jQuery selector sink using hashchange', desc: 'A blog list auto-scrolls by passing location.hash directly into a jQuery :contains() selector.' },
-        { num: '07', href: '/lab07', type: 'Reflected XSS', title: 'Reflected XSS into attribute with angle brackets HTML-encoded', desc: 'The search term is reflected into a value attribute; angle brackets are encoded but quotation marks are not.' },
-        { num: '08', href: '/lab08', type: 'Stored XSS', title: 'Stored XSS into anchor href with double quotes HTML-encoded', desc: 'A comment\'s website field is used as the author link href; double quotes are encoded but URL scheme is not validated.' },
-        { num: '09', href: '/lab09', type: 'Reflected XSS', title: 'Reflected XSS into JavaScript string with angle brackets encoded', desc: 'The search term is reflected into a JS string literal; angle brackets are encoded but single quotes are not escaped.' },
-        { num: '10', href: '/lab10', type: 'DOM-based XSS', title: 'DOM XSS in document.write inside a select element', desc: 'A store stock checker writes an option element via document.write inside a select, from location.search.' },
-      ] %>
-
-      <% labs.forEach(lab => { %>
-        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem; transition: box-shadow 0.15s;">
-          <div>
-            <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.25rem;">
-              Lab <%= lab.num %> &mdash; <%= lab.type %>
+      <!-- Hero featured article -->
+      <div class="hero-section">
+        <div class="section-title">Featured</div>
+        <div class="hero-featured">
+          <div class="hero-featured-image">
+            <span class="hero-featured-image-label">Research</span>
+          </div>
+          <div class="hero-featured-body">
+            <div class="hero-eyebrow">Web Security Research</div>
+            <h1 class="hero-title">Understanding Output Encoding: Why Context Is Everything</h1>
+            <p class="hero-excerpt">Output encoding is the single most important defense against injection attacks. But encoding the wrong thing in the wrong context leaves real attack surfaces wide open.</p>
+            <div class="hero-meta">
+              <span>Alice Chen</span>
+              <span>&middot;</span>
+              <span>7 min read</span>
+              <span>&middot;</span>
+              <span>Nov 2024</span>
             </div>
-            <div style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 700; color: var(--color-text); line-height: 1.35; margin-bottom: 0.5rem;">
-              <%= lab.title %>
-            </div>
-            <div style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.55;">
-              <%= lab.desc %>
+            <div>
+              <a href="/articles/1" class="btn btn-primary">Read Article</a>
             </div>
           </div>
-          <div>
-            <a href="<%= lab.href %>" class="btn btn-primary btn-sm">Open Challenge</a>
-          </div>
-        </div>
-      <% }); %>
-
-      <div style="background: var(--color-bg); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); padding: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem;">
-        <div>
-          <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.25rem;">
-            Tool
-          </div>
-          <div style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 700; color: var(--color-text); line-height: 1.35; margin-bottom: 0.5rem;">
-            Challenge Helper Page
-          </div>
-          <div style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.55;">
-            Save and host a custom HTML exploit document on a separate origin. URL is permanent and shareable with the verification bot.
-          </div>
-        </div>
-        <div>
-          <a href="/helper" class="btn btn-secondary btn-sm">Open Helper</a>
         </div>
       </div>
 
-    </div>
+      <!-- Recent articles grid -->
+      <div class="section-title">Recent Articles</div>
+      <div class="article-grid">
 
+        <a href="/articles/2" class="article-card">
+          <div class="article-card-thumb thumb-tutorial">Tutorial</div>
+          <div class="article-card-body">
+            <div class="article-card-category">Tutorial</div>
+            <div class="article-card-title">Stored vs. Reflected XSS: Attack Persistence and Impact</div>
+            <div class="article-card-excerpt">Both stored and reflected XSS let an attacker run JavaScript in a victim's browser. The difference is in how the payload gets there.</div>
+            <div class="article-card-meta">
+              <span class="author-avatar avatar-b">M</span>
+              <span>Marcus Webb</span>
+              <span>&middot; 8 min</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/articles/3" class="article-card">
+          <div class="article-card-thumb thumb-research">Research</div>
+          <div class="article-card-body">
+            <div class="article-card-category">Research</div>
+            <div class="article-card-title">DOM-Based XSS: When the Server Never Sees the Attack</div>
+            <div class="article-card-excerpt">The server sends a perfectly safe response, but client-side JavaScript processes attacker-controlled data and writes it into the DOM.</div>
+            <div class="article-card-meta">
+              <span class="author-avatar avatar-a">A</span>
+              <span>Alice Chen</span>
+              <span>&middot; 9 min</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/articles/4" class="article-card">
+          <div class="article-card-thumb thumb-analysis">Analysis</div>
+          <div class="article-card-body">
+            <div class="article-card-category">Analysis</div>
+            <div class="article-card-title">The jQuery Legacy Trap: Selector Injection in Older Versions</div>
+            <div class="article-card-excerpt">jQuery 1.x's selector engine had an underappreciated quirk that enabled a class of attacks persisting in unmaintained codebases.</div>
+            <div class="article-card-meta">
+              <span class="author-avatar avatar-d">D</span>
+              <span>David Okafor</span>
+              <span>&middot; 7 min</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/articles/5" class="article-card">
+          <div class="article-card-thumb thumb-tutorial">Tutorial</div>
+          <div class="article-card-body">
+            <div class="article-card-category">Tutorial</div>
+            <div class="article-card-title">Content Security Policy: A Practical Implementation Guide</div>
+            <div class="article-card-excerpt">A misconfigured CSP provides almost no protection. This guide walks through building a strict, effective policy from scratch.</div>
+            <div class="article-card-meta">
+              <span class="author-avatar avatar-e">S</span>
+              <span>Sarah Kim</span>
+              <span>&middot; 11 min</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/articles/6" class="article-card">
+          <div class="article-card-thumb thumb-tools">Tools</div>
+          <div class="article-card-body">
+            <div class="article-card-category">Tutorial</div>
+            <div class="article-card-title">Penetration Testing Web Applications: Where to Begin</div>
+            <div class="article-card-excerpt">Web application penetration testing is a disciplined process, not a random search for vulnerabilities. A structured methodology matters.</div>
+            <div class="article-card-meta">
+              <span class="author-avatar avatar-b">M</span>
+              <span>Marcus Webb</span>
+              <span>&middot; 8 min</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Newsletter</div>
+        <p class="newsletter-desc">Get new articles delivered to your inbox every week. No spam.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="your@email.com">
+          <button type="button">Subscribe</button>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/articles" class="tag">XSS</a>
+          <a href="/articles" class="tag">CSP</a>
+          <a href="/articles" class="tag">DOM Security</a>
+          <a href="/articles" class="tag">jQuery</a>
+          <a href="/articles" class="tag">Output Encoding</a>
+          <a href="/articles" class="tag">Web Security</a>
+          <a href="/articles" class="tag">Penetration Testing</a>
+          <a href="/articles" class="tag">OWASP</a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Most Read</div>
+        <ul class="sidebar-article-list">
+          <li class="sidebar-article-item">
+            <a href="/articles/5">Content Security Policy: A Practical Implementation Guide</a>
+            <div class="sidebar-article-item-meta">Sarah Kim &middot; 11 min read</div>
+          </li>
+          <li class="sidebar-article-item">
+            <a href="/articles/3">DOM-Based XSS: When the Server Never Sees the Attack</a>
+            <div class="sidebar-article-item-meta">Alice Chen &middot; 9 min read</div>
+          </li>
+          <li class="sidebar-article-item">
+            <a href="/articles/2">Stored vs. Reflected XSS: Attack Persistence and Impact</a>
+            <div class="sidebar-article-item-meta">Marcus Webb &middot; 8 min read</div>
+          </li>
+        </ul>
+      </div>
+
+    </aside>
   </div>
 </div>
 

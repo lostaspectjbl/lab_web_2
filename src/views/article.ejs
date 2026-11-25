@@ -1,0 +1,91 @@
+<%- include('partials/header', { title: post.title + ' — ByteNote', currentPage: 'articles' }) %>
+
+<div class="page-wrap">
+  <div class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/articles">Articles</a>
+    <span class="breadcrumb-sep">/</span>
+    <span><%= post.title %></span>
+  </div>
+
+  <article>
+    <div class="article-header">
+      <a href="/articles" class="article-category-tag"><%= post.category %></a>
+      <h1 class="article-title"><%= post.title %></h1>
+      <div class="article-meta-row">
+        <div class="article-author-info">
+          <span class="author-avatar avatar-<%= post.author_key || 'a' %>" style="font-size:0.75rem;width:30px;height:30px;">
+            <%= post.author.charAt(0) %>
+          </span>
+          <span class="article-author-name"><%= post.author %></span>
+        </div>
+        <span><%= post.read_time %> min read</span>
+        <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+      </div>
+    </div>
+
+    <div class="article-body">
+      <%- post.content %>
+    </div>
+
+    <div class="tag-list" style="margin-top:2rem;">
+      <a href="/articles" class="tag">Web Security</a>
+      <a href="/articles" class="tag"><%= post.category %></a>
+    </div>
+  </article>
+
+  <hr class="divider">
+
+  <!-- Comments -->
+  <div class="comments-section">
+    <h2 class="comments-title"><%= comments.length %> Comment<%= comments.length !== 1 ? 's' : '' %></h2>
+
+    <% if (comments.length > 0) { %>
+    <ul class="comment-list">
+      <% comments.forEach(function(c, i) {
+           const avatarColors = ['avatar-a','avatar-b','avatar-c','avatar-d','avatar-e'];
+           const avClass = avatarColors[i % avatarColors.length];
+           const initials = c.author.split(' ').map(w=>w[0]).join('').slice(0,2);
+      %>
+      <li class="comment-item">
+        <div class="comment-avatar <%= avClass %>"><%= initials %></div>
+        <div class="comment-body">
+          <div class="comment-header">
+            <span class="comment-author">
+              <% if (c.website) { %>
+                <a href="<%= c.website %>" target="_blank" rel="noopener"><%= c.author %></a>
+              <% } else { %>
+                <%= c.author %>
+              <% } %>
+            </span>
+            <span class="comment-date"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+          </div>
+          <div class="comment-text"><%= c.content %></div>
+        </div>
+      </li>
+      <% }); %>
+    </ul>
+    <% } %>
+
+    <div class="comment-form-title">Leave a Comment</div>
+    <form action="/articles/<%= post.id %>/comment" method="POST">
+      <div class="form-group">
+        <label for="author">Name</label>
+        <input type="text" id="author" name="author" placeholder="Your name" required maxlength="80">
+      </div>
+      <div class="form-group">
+        <label for="website">Website <span class="form-hint">(optional)</span></label>
+        <input type="text" id="website" name="website" placeholder="https://yoursite.com" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label for="content">Comment</label>
+        <textarea id="content" name="content" placeholder="Share your thoughts..." required maxlength="1000"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,55 @@
+<%- include('partials/header', { title: 'Shop — ByteNote', currentPage: 'shop' }) %>
+
+<div class="page-wrap wide">
+  <div class="page-header">
+    <div class="page-header-eyebrow">Security Hardware &amp; Tools</div>
+    <h1>ByteNote Shop</h1>
+    <p>Curated security hardware, books, and tools recommended by our authors.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;">
+
+    <a href="/lab10?product=usb-armory" class="article-card" style="text-decoration:none;color:inherit;">
+      <div class="article-card-thumb thumb-tools" style="font-size:0.8rem;letter-spacing:0.04em;">USB Armory Mk II</div>
+      <div class="article-card-body">
+        <div class="article-card-category">Hardware</div>
+        <div class="article-card-title">USB Armory Mk II</div>
+        <div class="article-card-excerpt">Open-source USB computer for security research. 900 MHz ARM processor, 512 MB RAM, USB Type-C.</div>
+        <div class="article-card-meta"><strong style="color:var(--color-text);">$149.99</strong></div>
+      </div>
+    </a>
+
+    <a href="/lab10?product=lan-turtle" class="article-card" style="text-decoration:none;color:inherit;">
+      <div class="article-card-thumb thumb-analysis" style="font-size:0.8rem;letter-spacing:0.04em;">LAN Turtle</div>
+      <div class="article-card-body">
+        <div class="article-card-category">Hardware</div>
+        <div class="article-card-title">Hak5 LAN Turtle</div>
+        <div class="article-card-excerpt">Covert network auditing tool. Passive tap capabilities, OpenWrt-based, remote access via reverse shell.</div>
+        <div class="article-card-meta"><strong style="color:var(--color-text);">$59.99</strong></div>
+      </div>
+    </a>
+
+    <a href="/lab10?product=rubber-ducky" class="article-card" style="text-decoration:none;color:inherit;">
+      <div class="article-card-thumb thumb-research" style="font-size:0.8rem;letter-spacing:0.04em;">USB Rubber Ducky</div>
+      <div class="article-card-body">
+        <div class="article-card-category">Hardware</div>
+        <div class="article-card-title">USB Rubber Ducky</div>
+        <div class="article-card-excerpt">Keystroke injection tool that presents as a USB HID keyboard. The classic red team payload delivery device.</div>
+        <div class="article-card-meta"><strong style="color:var(--color-text);">$54.99</strong></div>
+      </div>
+    </a>
+
+    <a href="/lab10?product=wifi-pineapple" class="article-card" style="text-decoration:none;color:inherit;">
+      <div class="article-card-thumb thumb-tutorial" style="font-size:0.8rem;letter-spacing:0.04em;">WiFi Pineapple</div>
+      <div class="article-card-body">
+        <div class="article-card-category">Hardware</div>
+        <div class="article-card-title">WiFi Pineapple Mark VII</div>
+        <div class="article-card-excerpt">Wireless auditing platform. Conduct rogue access point, man-in-the-middle, and wireless recon assessments.</div>
+        <div class="article-card-meta"><strong style="color:var(--color-text);">$109.99</strong></div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

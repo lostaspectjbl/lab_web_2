@@ -3,37 +3,37 @@ const router = express.Router();
 const { db } = require('../db');
 const config = require('../config');
 
-// Helper for Lab 09: Encodes angle brackets to prevent closing the <script> tag, but leaves single quotes and backslashes unhandled
+// Lab 09: Reflected XSS into JavaScript string — angle brackets encoded, quotes/backslash not
 function encodeAngleBracketsOnly(str) {
   if (!str) return '';
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 router.get('/', (req, res) => {
-  // Set lab flag cookie for CTF challenge verification
   res.cookie('flag', config.flags.lab09, {
     httpOnly: false,
     path: '/lab09',
     sameSite: 'lax'
   });
 
-  const rawSearch = req.query.search !== undefined ? String(req.query.search) : null;
-  let results = [];
+  const rawSearch = req.query.search !== undefined ? String(req.query.search) : '';
 
-  if (rawSearch !== null && rawSearch.trim() !== '') {
-    // Parameterized search query
-    const stmt = db.prepare('SELECT id, title, content FROM posts WHERE title LIKE ? OR content LIKE ?');
+  let posts = [];
+  if (rawSearch.trim() !== '') {
     const term = `%${rawSearch}%`;
-    results = stmt.all(term, term);
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY id DESC'
+    ).all(term, term);
+  } else {
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts ORDER BY id DESC'
+    ).all();
   }
 
-  // Reflected into JS string: angle brackets encoded, quotes/backslashes unhandled
-  const searchVal = rawSearch !== null ? encodeAngleBracketsOnly(rawSearch) : null;
+  // Angle brackets encoded; single quotes and backslash are NOT escaped (intentional JS string sink)
+  const search = encodeAngleBracketsOnly(rawSearch);
 
-  res.render('lab09', {
-    search: searchVal,
-    results
-  });
+  res.render('lab09', { search, rawSearch, posts });
 });
 
 module.exports = router;

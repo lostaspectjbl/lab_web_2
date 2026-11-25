@@ -1,86 +1,62 @@
-<%- include('partials/header', { title: 'Search — The Security Dispatch', currentLab: 'lab09' }) %>
+<%- include('partials/header', { title: 'Search — ByteNote', currentPage: '' }) %>
 
-<div class="page-wrap">
-  <div class="main-col">
-
-    <div class="lab-context">
-      <div class="lab-context-eyebrow">Lab 09 &mdash; Reflected XSS</div>
-      <div class="lab-context-title">Reflected XSS into a JavaScript string with angle brackets HTML encoded</div>
-      <div class="lab-context-desc">
-        The search term is reflected into an inline JavaScript string literal
-        (<code>var searchTerms = '...';</code>). Angle brackets are encoded — preventing tag injection —
-        but single quotes and backslashes are not escaped, allowing you to break out of the string.
-      </div>
-    </div>
-
-    <form action="/lab09" method="GET" class="search-form">
-      <input
-        type="text"
-        name="search"
-        placeholder="Search articles..."
-        value="<%= search !== null ? search : '' %>"
-        class="search-input"
-        autocomplete="off"
-      >
-      <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
-    <% if (search !== null) { %>
-      <div class="search-results-notice">
-        Showing results for <strong><%= search %></strong> &mdash; <%= results.length %> article(s) found.
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="page-header">
+        <div class="page-header-eyebrow">Search</div>
+        <h1>Search Articles</h1>
       </div>
 
-      <!-- VULNERABLE INLINE JAVASCRIPT CONTEXT: single quotes and backslashes unhandled -->
-      <script>
-        var searchTerms = '<%- search %>';
-        if (searchTerms) {
-          var t = document.createElement('img');
-          t.src = '/images/tracker.gif?q=' + encodeURIComponent(searchTerms);
-          t.style.display = 'none';
-          document.body.appendChild(t);
-        }
-      </script>
+      <div class="search-hero">
+        <div class="search-label">What are you looking for?</div>
+        <form class="search-hero-form" action="/lab09" method="get" autocomplete="off">
+          <input type="text" name="search" placeholder="Search articles, topics, authors..." value="<%= typeof rawSearch !== 'undefined' ? rawSearch : '' %>">
+          <button type="submit">Search</button>
+        </form>
+      </div>
 
-      <% if (results.length > 0) { %>
-        <div class="post-list">
-          <% results.forEach(post => { %>
-            <div class="post-card">
-              <div class="post-card-title"><%= post.title %></div>
-              <div class="post-card-desc"><%= post.content.substring(0, 160) %>...</div>
-            </div>
-          <% }); %>
+      <div id="search-output"></div>
+
+      <% if (posts && posts.length > 0) { %>
+      <div class="blog-list" style="margin-top:1.5rem;">
+        <% posts.forEach(function(post) { %>
+        <div class="blog-list-item">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+          <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+          <div class="blog-list-excerpt"><%= post.excerpt %></div>
+          <div class="blog-list-meta">
+            <span><%= post.author %></span>
+            <span>&middot;</span>
+            <span><%= post.read_time %> min read</span>
+          </div>
         </div>
-      <% } else { %>
-        <p class="empty-state">No articles matched your search query.</p>
+        <% }); %>
+      </div>
       <% } %>
-    <% } else { %>
-      <p class="empty-state">Use the search box above to find articles.</p>
-    <% } %>
+    </main>
 
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/lab09?search=xss" class="tag">XSS</a>
+          <a href="/lab09?search=csp" class="tag">CSP</a>
+          <a href="/lab09?search=dom" class="tag">DOM Security</a>
+          <a href="/lab09?search=encoding" class="tag">Output Encoding</a>
+        </div>
+      </div>
+    </aside>
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">About This Lab</div>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        The sink is a JS string literal. Close the string with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">'</code> and append a statement, e.g. <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&#39;;alert(1);//</code>.
-      </p>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
-    </div>
-  </aside>
 </div>
+
+<!-- Analytics variable — reflected XSS in JS string context -->
+<script>
+  var searchTerms = '<%- search %>';
+  if (searchTerms) {
+    document.getElementById('search-output').innerHTML =
+      '<div class="search-results-header">Showing results for: ' + searchTerms + '</div>';
+  }
+</script>
 
 <%- include('partials/footer') %>

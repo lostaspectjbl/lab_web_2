@@ -1,79 +1,72 @@
-<%- include('partials/header', { title: 'Articles — The Security Dispatch', currentLab: 'lab06' }) %>
+<%- include('partials/header', { title: 'Articles — ByteNote', currentPage: 'articles' }) %>
 
-<div class="page-wrap">
-  <div class="main-col">
-
-    <div class="lab-context">
-      <div class="lab-context-eyebrow">Lab 06 &mdash; DOM-based XSS</div>
-      <div class="lab-context-title">DOM XSS in jQuery selector sink using a hashchange event</div>
-      <div class="lab-context-desc">
-        On every <code>hashchange</code> event, the script passes the decoded hash value directly into a jQuery
-        <code>:contains()</code> selector. In jQuery 1.8.x, HTML strings passed to the selector engine are
-        parsed as DOM, triggering script execution. Use the
-        <a href="<%= helperUrl %>" target="_blank" style="color:#7a1f1a;font-weight:600;">Challenge Helper Page</a>
-        to deliver an iframe-based trigger from a separate origin.
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="page-header">
+        <div class="page-header-eyebrow">All Articles</div>
+        <h1>Cybersecurity &amp; Web Technology</h1>
+        <p>Browse our full archive of research, tutorials, and analysis. Use the browser's URL hash to jump to a specific article by title.</p>
       </div>
-    </div>
 
-    <div class="section-header">All Articles</div>
-
-    <section class="blog-list post-list">
-      <% posts.forEach(post => { %>
-        <article class="post-card" id="post-<%= post.id %>">
-          <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:0.2rem;">
-            <%= post.author %> &mdash; <%= post.created_at %>
+      <div class="blog-list">
+        <% posts.forEach(function(post) { %>
+        <section class="blog-list">
+          <div class="blog-list-item">
+            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+            <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+            <div class="blog-list-excerpt"><%= post.excerpt %></div>
+            <div class="blog-list-meta">
+              <span><%= post.author %></span>
+              <span>&middot;</span>
+              <span><%= post.read_time %> min read</span>
+              <span>&middot;</span>
+              <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+            </div>
           </div>
-          <h2 class="post-card-title" style="margin-bottom:0.4rem;"><%= post.title %></h2>
-          <p class="post-card-desc"><%= post.content %></p>
-        </article>
-      <% }); %>
-    </section>
+        </section>
+        <% }); %>
+      </div>
 
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Jump to Article</div>
+        <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:0.75rem;">Append <code style="font-size:0.75rem;background:var(--color-code-bg);padding:0.1em 0.3em;border-radius:3px;">#Article Title</code> to the URL to scroll to a specific article.</p>
+        <div class="sidebar-tags">
+          <% posts.forEach(function(post) { %>
+          <a href="#<%= encodeURIComponent(post.title) %>" class="tag" style="font-size:0.68rem;"><%= post.title.substring(0, 30) %>...</a>
+          <% }); %>
+        </div>
+      </div>
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/articles" class="tag">XSS</a>
+          <a href="/articles" class="tag">CSP</a>
+          <a href="/articles" class="tag">DOM Security</a>
+          <a href="/articles" class="tag">jQuery</a>
+          <a href="/articles" class="tag">Penetration Testing</a>
+        </div>
+      </div>
+    </aside>
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">About This Lab</div>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        jQuery 1.8.3 (local) processes <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">location.hash</code> in a <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">:contains()</code> selector on hashchange. HTML strings in the selector are evaluated as DOM nodes.
-      </p>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Exploit Delivery</div>
-      <p class="text-sm text-muted" style="line-height: 1.6; margin-bottom: 0.6rem;">
-        You need a cross-origin page to trigger hashchange in an iframe. Save your document on the Helper.
-      </p>
-      <a href="<%= helperUrl %>" class="btn btn-secondary btn-sm" target="_blank">Open Helper Page</a>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
-    </div>
-  </aside>
 </div>
 
 <script src="/js/vendor/jquery-1.8.3.min.js"></script>
 <script>
-  // VULNERABLE SINK: jQuery $() selector receives location.hash on hashchange
-  $(window).on('hashchange', function () {
-    var query = decodeURIComponent(window.location.hash.slice(1));
-    if (query) {
-      var post = $('section.blog-list h2:contains(' + query + ')');
-      if (post && post.length > 0) {
-        post.get(0).scrollIntoView();
-      }
+  // Auto-scroll to article matching the URL hash on hashchange
+  $(window).on('hashchange', function() {
+    var hash = decodeURIComponent(location.hash.slice(1));
+    if (!hash) return;
+    var target = $('section.blog-list h2:contains(' + hash + ')');
+    if (target.length) {
+      $('html, body').animate({ scrollTop: target.offset().top - 80 }, 400);
     }
   });
+  // Trigger on initial load too
+  if (location.hash) $(window).trigger('hashchange');
 </script>
 
 <%- include('partials/footer') %>

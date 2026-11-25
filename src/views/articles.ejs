@@ -1,0 +1,57 @@
+<%- include('partials/header', { title: 'Articles — ByteNote', currentPage: 'articles' }) %>
+
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="page-header">
+        <div class="page-header-eyebrow">All Articles</div>
+        <h1>Cybersecurity &amp; Web Technology</h1>
+        <p>In-depth research, practical tutorials, and thoughtful analysis from the ByteNote team.</p>
+      </div>
+
+      <div class="blog-list">
+        <% posts.forEach(function(post) { %>
+        <div class="blog-list-item">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+          <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+          <div class="blog-list-excerpt"><%= post.excerpt %></div>
+          <div class="blog-list-meta">
+            <span><%= post.author %></span>
+            <span>&middot;</span>
+            <span><%= post.read_time %> min read</span>
+            <span>&middot;</span>
+            <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/articles" class="tag">XSS</a>
+          <a href="/articles" class="tag">CSP</a>
+          <a href="/articles" class="tag">DOM Security</a>
+          <a href="/articles" class="tag">jQuery</a>
+          <a href="/articles" class="tag">Output Encoding</a>
+          <a href="/articles" class="tag">Web Security</a>
+          <a href="/articles" class="tag">Penetration Testing</a>
+        </div>
+      </div>
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Authors</div>
+        <ul class="sidebar-article-list">
+          <li class="sidebar-article-item"><a href="/about#authors">Alice Chen</a><div class="sidebar-article-item-meta">Security Researcher</div></li>
+          <li class="sidebar-article-item"><a href="/about#authors">Marcus Webb</a><div class="sidebar-article-item-meta">Penetration Tester</div></li>
+          <li class="sidebar-article-item"><a href="/about#authors">David Okafor</a><div class="sidebar-article-item-meta">Web Developer</div></li>
+          <li class="sidebar-article-item"><a href="/about#authors">Sarah Kim</a><div class="sidebar-article-item-meta">AppSec Engineer</div></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

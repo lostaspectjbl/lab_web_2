@@ -3,37 +3,33 @@ const router = express.Router();
 const { db } = require('../db');
 const config = require('../config');
 
-// Specific custom encoder for Lab 07: Angle brackets are HTML-encoded, quotes are left unencoded
+// Lab 07: Reflected XSS into HTML attribute — angle brackets encoded, quotes not
 function encodeAngleBracketsOnly(str) {
   if (!str) return '';
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 router.get('/', (req, res) => {
-  // Set lab flag cookie for CTF challenge verification
   res.cookie('flag', config.flags.lab07, {
     httpOnly: false,
     path: '/lab07',
     sameSite: 'lax'
   });
 
-  const rawSearch = req.query.search !== undefined ? String(req.query.search) : null;
-  let results = [];
+  const rawSearch = req.query.search !== undefined ? String(req.query.search) : '';
 
-  if (rawSearch !== null && rawSearch.trim() !== '') {
-    // Parameterized search query
-    const stmt = db.prepare('SELECT id, title, content FROM posts WHERE title LIKE ? OR content LIKE ?');
+  let posts = [];
+  if (rawSearch.trim() !== '') {
     const term = `%${rawSearch}%`;
-    results = stmt.all(term, term);
+    posts = db.prepare(
+      'SELECT id, title, slug, category, excerpt, author, read_time FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY id DESC'
+    ).all(term, term);
   }
 
-  // Value reflected into attribute with angle brackets encoded but quotes intact
-  const searchVal = rawSearch !== null ? encodeAngleBracketsOnly(rawSearch) : null;
+  // Angle brackets HTML-encoded, single/double quotes left raw
+  const search = encodeAngleBracketsOnly(rawSearch);
 
-  res.render('lab07', {
-    search: searchVal,
-    results
-  });
+  res.render('lab07', { search, posts });
 });
 
 module.exports = router;

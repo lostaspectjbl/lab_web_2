@@ -1,0 +1,57 @@
+<%- include('partials/header', { title: 'Search — ByteNote', currentPage: '' }) %>
+
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="page-header">
+        <div class="page-header-eyebrow">Search</div>
+        <h1>Search Articles</h1>
+      </div>
+
+      <div class="search-hero">
+        <form class="search-hero-form" action="/search" method="get" autocomplete="off">
+          <input type="search" name="q" placeholder="Search articles, topics, authors..." value="<%= typeof query !== 'undefined' ? query : '' %>">
+          <button type="submit">Search</button>
+        </form>
+      </div>
+
+      <% if (typeof query !== 'undefined' && query) { %>
+        <% if (results && results.length > 0) { %>
+          <div class="search-results-header">Found <%= results.length %> result<%= results.length !== 1 ? 's' : '' %> for "<%= query %>"</div>
+          <div class="blog-list">
+            <% results.forEach(function(post) { %>
+            <div class="blog-list-item">
+              <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+              <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+              <div class="blog-list-excerpt"><%= post.excerpt %></div>
+              <div class="blog-list-meta">
+                <span><%= post.author %></span>
+                <span>&middot;</span>
+                <span><%= post.read_time %> min read</span>
+              </div>
+            </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="search-no-results">No articles found for "<strong><%= query %></strong>". Try a different search term.</div>
+        <% } %>
+      <% } %>
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/search?q=xss" class="tag">XSS</a>
+          <a href="/search?q=csp" class="tag">CSP</a>
+          <a href="/search?q=dom" class="tag">DOM Security</a>
+          <a href="/search?q=jquery" class="tag">jQuery</a>
+          <a href="/search?q=encoding" class="tag">Output Encoding</a>
+          <a href="/search?q=penetration" class="tag">Pen Testing</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

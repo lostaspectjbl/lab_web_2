@@ -1,118 +1,90 @@
-<%- include('partials/header', { title: product.name + ' — The Security Dispatch Shop', currentLab: 'lab10' }) %>
+<%- include('partials/header', { title: product.name + ' — ByteNote Shop', currentPage: 'shop' }) %>
 
-<div class="page-wrap">
-  <div class="main-col">
+<div class="page-wrap wide">
+  <div class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="/shop">Shop</a>
+    <span class="breadcrumb-sep">/</span>
+    <span><%= product.name %></span>
+  </div>
 
-    <div class="lab-context">
-      <div class="lab-context-eyebrow">Lab 10 &mdash; DOM-based XSS</div>
-      <div class="lab-context-title">DOM XSS in document.write sink using location.search inside a select element</div>
-      <div class="lab-context-desc">
-        The stock checker reads <code>storeId</code> from <code>location.search</code> and writes an
-        <code>&lt;option&gt;</code> element using <code>document.write</code> inside a <code>&lt;select&gt;</code>.
-        Close the select tag first to escape the element context, then inject an event-carrying element.
-      </div>
-    </div>
+  <div class="product-layout">
+    <!-- Product image panel -->
+    <div>
+      <div class="product-image-panel">Product Image</div>
 
-    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
-      <a href="/" style="color:var(--color-text-muted);">Shop</a>
-      <span>/</span>
-      <span>Security Hardware</span>
-      <span>/</span>
-      <span style="color:var(--color-text);"><%= product.name %></span>
-    </div>
-
-    <div class="product-layout">
-      <div>
-        <h1 class="product-title"><%= product.name %></h1>
-        <div class="product-price"><%= product.price %></div>
-        <p class="product-desc"><%= product.description %></p>
-
-        <hr class="divider" style="margin: 1.25rem 0;">
-
-        <div style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.6rem;">
-          Specifications
-        </div>
-        <table style="width:100%; font-size:0.875rem; border-collapse:collapse;">
-          <tr style="border-bottom:1px solid var(--color-border-soft);">
-            <td style="padding:0.5rem 0; color:var(--color-text-muted); width:40%;">Protocol</td>
-            <td style="padding:0.5rem 0;">WebAuthn, FIDO2, U2F</td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--color-border-soft);">
-            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Interface</td>
-            <td style="padding:0.5rem 0;">USB-A, NFC</td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--color-border-soft);">
-            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Compatibility</td>
-            <td style="padding:0.5rem 0;">Windows, macOS, Linux, Android</td>
-          </tr>
+      <div class="product-specs">
+        <div class="product-specs-title">Technical Specifications</div>
+        <table class="spec-table">
+          <% product.specs.forEach(function(spec) { %>
           <tr>
-            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Warranty</td>
-            <td style="padding:0.5rem 0;">2 years</td>
+            <td><%= spec.label %></td>
+            <td><%= spec.value %></td>
           </tr>
+          <% }); %>
         </table>
       </div>
+    </div>
 
-      <div>
-        <div class="stock-box">
-          <div class="stock-box-title">Check Store Availability</div>
-          <form action="/lab10/check-stock" method="POST">
-            <div class="form-block" style="margin-bottom:0.75rem;">
-              <label class="form-label" for="storeSelect10">Select a store</label>
-              <!-- VULNERABLE SELECT ELEMENT: document.write inside select -->
-              <select name="storeId" id="storeSelect10" class="form-input form-select">
-                <script>
-                  var storeId = (new URLSearchParams(window.location.search)).get('storeId');
-                  if (storeId) {
-                    // VULNERABLE DOM SINK: document.write without sanitisation
-                    document.write('<option selected value="' + storeId + '">' + storeId + '</option>');
-                  }
-                </script>
-                <option value="">Choose a store...</option>
-                <option value="London">London</option>
-                <option value="Paris">Paris</option>
-                <option value="Milan">Milan</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;">Check Stock</button>
-          </form>
+    <!-- Product info panel -->
+    <div class="product-info">
+      <div class="product-category"><%= product.category %></div>
+      <h1 class="product-name"><%= product.name %></h1>
+      <div class="product-rating">
+        <span class="product-stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+        <span><%= product.rating %> (<%= product.reviewCount %> reviews)</span>
+      </div>
+      <div class="product-price"><%= product.price %></div>
+      <p class="product-desc"><%= product.description %></p>
 
-          <% if (storeStock !== null) { %>
-            <div class="stock-result">
-              In stock: <%= storeStock %> units available.
-            </div>
+      <!-- Stock availability checker -->
+      <div class="product-stock-panel">
+        <div class="product-stock-title">Check Store Availability</div>
+        <form action="/lab10" method="get" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
+          <input type="hidden" name="product" value="<%= product.id %>">
+          <div style="flex:1;min-width:140px;">
+            <label for="storeId" style="font-size:0.78rem;font-weight:600;color:var(--color-text-secondary);display:block;margin-bottom:0.3rem;">Select Store</label>
+            <select name="storeId" id="storeId" style="width:100%;">
+              <option value="">Choose a location...</option>
+              <% availableStores.forEach(function(s) { %>
+              <option value="<%= s.id %>"><%= s.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-secondary btn-sm">Check Stock</button>
+        </form>
+
+        <div style="margin-top:1rem;">
+          <div id="stock-result">
+            <select name="storeId" style="display:none;">
+              <script>
+                (function(){
+                  var params = new URLSearchParams(location.search);
+                  var sid = params.get('storeId');
+                  if (sid) { document.write('<option selected value="' + sid + '">' + sid + '</option>'); }
+                })();
+              </script>
+            </select>
+          </div>
+          <% if (typeof storeId !== 'undefined' && storeId && typeof storeStock !== 'undefined' && storeStock !== null) { %>
+          <div class="alert <%= storeStock > 0 ? 'alert-success' : 'alert-warning' %>" style="margin-top:0.75rem;">
+            <% if (storeStock > 0) { %>
+              In stock at selected location (<%= storeStock %> units available).
+            <% } else { %>
+              Out of stock at selected location. Check another store or order online.
+            <% } %>
+          </div>
           <% } %>
         </div>
+      </div>
 
-        <div class="info-box mt-sm" style="font-size: 0.8rem;">
-          Delivery available to all EU and UK addresses. Orders placed before 14:00 ship same day.
-        </div>
+      <div class="product-actions">
+        <button class="btn btn-primary btn-lg" type="button">Add to Cart</button>
+        <button class="btn btn-secondary" type="button">Save for Later</button>
       </div>
     </div>
-
   </div>
-  <aside class="sidebar">
-    <div class="sidebar-block">
-      <div class="sidebar-title">About This Lab</div>
-      <p class="text-sm text-muted" style="line-height: 1.6;">
-        The sink is <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">document.write</code> inside a <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&lt;select&gt;</code>. First close the element with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&lt;/select&gt;</code>, then inject.
-      </p>
-    </div>
-    <div class="sidebar-block">
-      <div class="sidebar-title">Labs</div>
-      <ul class="sidebar-nav">
-        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
-        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
-        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
-        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
-        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
-        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
-        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
-        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
-        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
-        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
-      </ul>
-    </div>
-  </aside>
 </div>
 
 <%- include('partials/footer') %>

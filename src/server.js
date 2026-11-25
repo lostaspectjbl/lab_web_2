@@ -38,6 +38,7 @@ const lab09Routes = require('./routes/lab09');
 const lab10Routes = require('./routes/lab10');
 const helperRoutes = require('./routes/helper');
 
+// All public blog routes (homepage, /articles, /shop, /about, /contact, /search) are in indexRoutes
 app.use('/', indexRoutes);
 app.use('/lab01', lab01Routes);
 app.use('/lab02', lab02Routes);

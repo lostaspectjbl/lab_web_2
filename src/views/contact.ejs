@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'Contact — ByteNote', currentPage: 'contact' }) %>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-header-eyebrow">Get in Touch</div>
+    <h1>Contact ByteNote</h1>
+    <p>Have a question, article pitch, or correction? Send us a message using the form below.</p>
+  </div>
+
+  <% if (typeof message !== 'undefined' && message) { %>
+  <div class="alert alert-success"><%= message %></div>
+  <% } %>
+
+  <div class="feedback-container">
+    <form action="/contact" method="POST">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="Full name" required maxlength="100">
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required maxlength="200">
+      </div>
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" placeholder="Article pitch, correction, general inquiry..." required maxlength="200">
+      </div>
+      <div class="form-group">
+        <label for="body">Message</label>
+        <textarea id="body" name="body" placeholder="Your message..." required maxlength="2000" style="min-height:140px;"></textarea>
+      </div>
+      <div class="feedback-nav">
+        <button type="submit" class="btn btn-primary">Send Message</button>
+        <a id="backLink" href="/" class="btn btn-secondary">Back</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
