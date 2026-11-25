@@ -1,68 +1,86 @@
-<%- include('partials/header', { title: 'Lab 09 - Reflected XSS into JavaScript string', currentLab: 'lab09' }) %>
+<%- include('partials/header', { title: 'Search — The Security Dispatch', currentLab: 'lab09' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 09</span>
-    <span>JavaScript String Context XSS</span>
+<div class="page-wrap">
+  <div class="main-col">
+
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 09 &mdash; Reflected XSS</div>
+      <div class="lab-context-title">Reflected XSS into a JavaScript string with angle brackets HTML encoded</div>
+      <div class="lab-context-desc">
+        The search term is reflected into an inline JavaScript string literal
+        (<code>var searchTerms = '...';</code>). Angle brackets are encoded — preventing tag injection —
+        but single quotes and backslashes are not escaped, allowing you to break out of the string.
+      </div>
+    </div>
+
+    <form action="/lab09" method="GET" class="search-form">
+      <input
+        type="text"
+        name="search"
+        placeholder="Search articles..."
+        value="<%= search !== null ? search : '' %>"
+        class="search-input"
+        autocomplete="off"
+      >
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <% if (search !== null) { %>
+      <div class="search-results-notice">
+        Showing results for <strong><%= search %></strong> &mdash; <%= results.length %> article(s) found.
+      </div>
+
+      <!-- VULNERABLE INLINE JAVASCRIPT CONTEXT: single quotes and backslashes unhandled -->
+      <script>
+        var searchTerms = '<%- search %>';
+        if (searchTerms) {
+          var t = document.createElement('img');
+          t.src = '/images/tracker.gif?q=' + encodeURIComponent(searchTerms);
+          t.style.display = 'none';
+          document.body.appendChild(t);
+        }
+      </script>
+
+      <% if (results.length > 0) { %>
+        <div class="post-list">
+          <% results.forEach(post => { %>
+            <div class="post-card">
+              <div class="post-card-title"><%= post.title %></div>
+              <div class="post-card-desc"><%= post.content.substring(0, 160) %>...</div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="empty-state">No articles matched your search query.</p>
+      <% } %>
+    <% } else { %>
+      <p class="empty-state">Use the search box above to find articles.</p>
+    <% } %>
+
   </div>
-  <h1 class="lab-title">Reflected XSS into a JavaScript string with angle brackets HTML encoded</h1>
-  <p class="lab-description">
-    Lab ini berisi kerentanan reflected Cross-Site Scripting di dalam variabel JavaScript inline (<code>var searchTerms = '...';</code>).
-    Server meng-encode karakter <code>&lt;</code> dan <code>&gt;</code> sehingga Anda tidak dapat menutup tag <code>&lt;script&gt;</code>,
-    namun tanda kutip tunggal (<code>'</code>) dan karakter backslash (<code>\</code>) tidak ditangani.
-  </p>
-</div>
-
-<div class="card">
-  <form action="/lab09" method="GET" class="search-form">
-    <input 
-      type="text" 
-      name="search" 
-      placeholder="Search blog posts..." 
-      value="<%= search !== null ? search : '' %>"
-      class="form-input"
-    >
-    <button type="submit" class="btn btn-primary">Search</button>
-  </form>
-
-  <% if (search !== null) { %>
-    <div class="search-results-banner">
-      <!-- Output teks HTML biasa di-encode dengan aman -->
-      <h3>Results for: <%= search %></h3>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
-        Found <%= results.length %> post(s) matching your query.
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        The sink is a JS string literal. Close the string with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">'</code> and append a statement, e.g. <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&#39;;alert(1);//</code>.
       </p>
     </div>
-
-    <!-- VULNERABLE INLINE JAVASCRIPT CONTEXT -->
-    <script>
-      var searchTerms = '<%- search %>';
-      if (searchTerms) {
-        // Analytics image call
-        var trackImg = document.createElement('img');
-        trackImg.src = '/images/tracker.gif?searchTerms=' + encodeURIComponent(searchTerms);
-        trackImg.style.display = 'none';
-        document.body.appendChild(trackImg);
-      }
-    </script>
-
-    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-      <% if (results.length > 0) { %>
-        <% results.forEach(post => { %>
-          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
-            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
-            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
-          </div>
-        <% }); %>
-      <% } else { %>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
-      <% } %>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
     </div>
-  <% } else { %>
-    <div style="margin-top: 1.5rem;">
-      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
-    </div>
-  <% } %>
+  </aside>
 </div>
 
 <%- include('partials/footer') %>

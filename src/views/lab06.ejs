@@ -1,42 +1,71 @@
-<%- include('partials/header', { title: 'Lab 06 - DOM XSS in jQuery selector sink', currentLab: 'lab06' }) %>
+<%- include('partials/header', { title: 'Articles — The Security Dispatch', currentLab: 'lab06' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 06</span>
-    <span>DOM-based XSS (hashchange)</span>
+<div class="page-wrap">
+  <div class="main-col">
+
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 06 &mdash; DOM-based XSS</div>
+      <div class="lab-context-title">DOM XSS in jQuery selector sink using a hashchange event</div>
+      <div class="lab-context-desc">
+        On every <code>hashchange</code> event, the script passes the decoded hash value directly into a jQuery
+        <code>:contains()</code> selector. In jQuery 1.8.x, HTML strings passed to the selector engine are
+        parsed as DOM, triggering script execution. Use the
+        <a href="<%= helperUrl %>" target="_blank" style="color:#7a1f1a;font-weight:600;">Challenge Helper Page</a>
+        to deliver an iframe-based trigger from a separate origin.
+      </div>
+    </div>
+
+    <div class="section-header">All Articles</div>
+
+    <section class="blog-list post-list">
+      <% posts.forEach(post => { %>
+        <article class="post-card" id="post-<%= post.id %>">
+          <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:0.2rem;">
+            <%= post.author %> &mdash; <%= post.created_at %>
+          </div>
+          <h2 class="post-card-title" style="margin-bottom:0.4rem;"><%= post.title %></h2>
+          <p class="post-card-desc"><%= post.content %></p>
+        </article>
+      <% }); %>
+    </section>
+
   </div>
-  <h1 class="lab-title">DOM XSS in jQuery selector sink using a hashchange event</h1>
-  <p class="lab-description">
-    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada halaman blog. Skrip memanfaatkan pustaka jQuery 1.8.x
-    untuk mendeteksi event <code>hashchange</code> dan mencari judul artikel menggunakan selector <code>:contains(...)</code>
-    dari nilai <code>location.hash</code> tanpa sanitasi.
-  </p>
-  <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.85rem; color: #93c5fd;">
-    💡 <em>Petunjuk eksploitasi:</em> Gunakan <a href="<%= helperUrl %>" target="_blank" style="color: #ffffff; text-decoration: underline; font-weight: 600;">Challenge Helper Page</a> (origin terpisah) untuk membuat dokumen HTML pemicu yang menyematkan iframe ke lab ini.
-  </div>
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        jQuery 1.8.3 (local) processes <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">location.hash</code> in a <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">:contains()</code> selector on hashchange. HTML strings in the selector are evaluated as DOM nodes.
+      </p>
+    </div>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Exploit Delivery</div>
+      <p class="text-sm text-muted" style="line-height: 1.6; margin-bottom: 0.6rem;">
+        You need a cross-origin page to trigger hashchange in an iframe. Save your document on the Helper.
+      </p>
+      <a href="<%= helperUrl %>" class="btn btn-secondary btn-sm" target="_blank">Open Helper Page</a>
+    </div>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
+    </div>
+  </aside>
 </div>
 
-<section class="blog-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
-  <% posts.forEach(post => { %>
-    <article class="card" style="margin-bottom: 0;" id="post-<%= post.id %>">
-      <header class="post-header" style="margin-bottom: 0.75rem; padding-bottom: 0.5rem;">
-        <h2 class="post-title" style="font-size: 1.45rem;"><%= post.title %></h2>
-        <div class="post-meta">
-          By <strong><%= post.author %></strong> &bull; <%= post.created_at %>
-        </div>
-      </header>
-      <div class="post-content" style="margin-bottom: 0; font-size: 0.95rem;">
-        <p><%= post.content %></p>
-      </div>
-    </article>
-  <% }); %>
-</section>
-
-<!-- Local jQuery 1.8.x library -->
 <script src="/js/vendor/jquery-1.8.3.min.js"></script>
 <script>
-  // VULNERABLE SINK: jQuery $() selector parsing with location.hash on hashchange
-  $(window).on('hashchange', function() {
+  // VULNERABLE SINK: jQuery $() selector receives location.hash on hashchange
+  $(window).on('hashchange', function () {
     var query = decodeURIComponent(window.location.hash.slice(1));
     if (query) {
       var post = $('section.blog-list h2:contains(' + query + ')');

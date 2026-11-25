@@ -1,60 +1,118 @@
-<%- include('partials/header', { title: 'Lab 10 - DOM XSS in document.write inside select element', currentLab: 'lab10' }) %>
+<%- include('partials/header', { title: product.name + ' — The Security Dispatch Shop', currentLab: 'lab10' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 10</span>
-    <span>DOM-based XSS (Select Context)</span>
-  </div>
-  <h1 class="lab-title">DOM XSS in document.write sink using source location.search inside a select element</h1>
-  <p class="lab-description">
-    Lab ini mensimulasikan fitur pengecekan ketersediaan stok produk di berbagai cabang toko.
-    Skrip sisi klien membaca nilai <code>storeId</code> dari <code>location.search</code> dan menulis elemen
-    <code>&lt;option&gt;</code> langsung di dalam elemen <code>&lt;select&gt;</code> menggunakan <code>document.write</code> tanpa sanitasi.
-  </p>
-</div>
+<div class="page-wrap">
+  <div class="main-col">
 
-<div class="card">
-  <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 280px;">
-      <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-main);"><%= product.name %></h2>
-      <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary-color); margin-bottom: 1rem;">
-        <%= product.price %>
-      </div>
-      <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-        <%= product.description %>
-      </p>
-
-      <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
-        <h4 style="margin-bottom: 0.75rem; font-size: 1rem;">Check Store Availability</h4>
-
-        <form action="/lab10/check-stock" method="POST" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-          <label for="storeSelect" style="font-size: 0.875rem; font-weight: 600;">Store:</label>
-          
-          <!-- VULNERABLE SELECT ELEMENT: document.write called directly inside select -->
-          <select name="storeId" id="storeSelect" class="form-input" style="max-width: 250px;">
-            <script>
-              var storeId = (new URLSearchParams(window.location.search)).get('storeId');
-              if (storeId) {
-                // VULNERABLE DOM SINK: Writes unescaped user input into select options
-                document.write('<option selected value="' + storeId + '">' + storeId + '</option>');
-              }
-            </script>
-            <option value="London">London</option>
-            <option value="Paris">Paris</option>
-            <option value="Milan">Milan</option>
-          </select>
-
-          <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1rem;">Check Stock</button>
-        </form>
-
-        <% if (storeStock !== null) { %>
-          <div style="margin-top: 1rem; padding: 0.75rem 1rem; background-color: #ecfdf5; border-left: 3px solid var(--success-color); border-radius: var(--radius-sm); font-size: 0.9rem; color: #065f46;">
-            <strong>In Stock:</strong> <%= storeStock %> units available in the selected store location.
-          </div>
-        <% } %>
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 10 &mdash; DOM-based XSS</div>
+      <div class="lab-context-title">DOM XSS in document.write sink using location.search inside a select element</div>
+      <div class="lab-context-desc">
+        The stock checker reads <code>storeId</code> from <code>location.search</code> and writes an
+        <code>&lt;option&gt;</code> element using <code>document.write</code> inside a <code>&lt;select&gt;</code>.
+        Close the select tag first to escape the element context, then inject an event-carrying element.
       </div>
     </div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">
+      <a href="/" style="color:var(--color-text-muted);">Shop</a>
+      <span>/</span>
+      <span>Security Hardware</span>
+      <span>/</span>
+      <span style="color:var(--color-text);"><%= product.name %></span>
+    </div>
+
+    <div class="product-layout">
+      <div>
+        <h1 class="product-title"><%= product.name %></h1>
+        <div class="product-price"><%= product.price %></div>
+        <p class="product-desc"><%= product.description %></p>
+
+        <hr class="divider" style="margin: 1.25rem 0;">
+
+        <div style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.6rem;">
+          Specifications
+        </div>
+        <table style="width:100%; font-size:0.875rem; border-collapse:collapse;">
+          <tr style="border-bottom:1px solid var(--color-border-soft);">
+            <td style="padding:0.5rem 0; color:var(--color-text-muted); width:40%;">Protocol</td>
+            <td style="padding:0.5rem 0;">WebAuthn, FIDO2, U2F</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border-soft);">
+            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Interface</td>
+            <td style="padding:0.5rem 0;">USB-A, NFC</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--color-border-soft);">
+            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Compatibility</td>
+            <td style="padding:0.5rem 0;">Windows, macOS, Linux, Android</td>
+          </tr>
+          <tr>
+            <td style="padding:0.5rem 0; color:var(--color-text-muted);">Warranty</td>
+            <td style="padding:0.5rem 0;">2 years</td>
+          </tr>
+        </table>
+      </div>
+
+      <div>
+        <div class="stock-box">
+          <div class="stock-box-title">Check Store Availability</div>
+          <form action="/lab10/check-stock" method="POST">
+            <div class="form-block" style="margin-bottom:0.75rem;">
+              <label class="form-label" for="storeSelect10">Select a store</label>
+              <!-- VULNERABLE SELECT ELEMENT: document.write inside select -->
+              <select name="storeId" id="storeSelect10" class="form-input form-select">
+                <script>
+                  var storeId = (new URLSearchParams(window.location.search)).get('storeId');
+                  if (storeId) {
+                    // VULNERABLE DOM SINK: document.write without sanitisation
+                    document.write('<option selected value="' + storeId + '">' + storeId + '</option>');
+                  }
+                </script>
+                <option value="">Choose a store...</option>
+                <option value="London">London</option>
+                <option value="Paris">Paris</option>
+                <option value="Milan">Milan</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Check Stock</button>
+          </form>
+
+          <% if (storeStock !== null) { %>
+            <div class="stock-result">
+              In stock: <%= storeStock %> units available.
+            </div>
+          <% } %>
+        </div>
+
+        <div class="info-box mt-sm" style="font-size: 0.8rem;">
+          Delivery available to all EU and UK addresses. Orders placed before 14:00 ship same day.
+        </div>
+      </div>
+    </div>
+
   </div>
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        The sink is <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">document.write</code> inside a <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&lt;select&gt;</code>. First close the element with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&lt;/select&gt;</code>, then inject.
+      </p>
+    </div>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
+    </div>
+  </aside>
 </div>
 
 <%- include('partials/footer') %>

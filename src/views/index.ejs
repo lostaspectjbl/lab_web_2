@@ -1,139 +1,72 @@
-<%- include('partials/header', { title: 'XSS Lab Series - Dashboard', currentLab: 'home' }) %>
+<%- include('partials/header', { title: 'The Security Dispatch — XSS Lab Series', currentLab: 'home' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Training Environment</span>
-    <span>PortSwigger-Inspired Lab Series</span>
-  </div>
-  <h1 class="lab-title">Web Security Training: Cross-Site Scripting (XSS)</h1>
-  <p class="lab-description">
-    Pelajari mekanisme Cross-Site Scripting (Reflected, Stored, dan DOM-based) melalui serangkaian lab tantangan CTF yang realistis dalam lingkungan terisolasi.
-  </p>
-</div>
+<div class="page-wrap wide">
+  <div class="main-col">
 
-<div class="card">
-  <h2 class="card-title">Available Labs</h2>
-  <div class="lab-grid">
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 01</div>
-        <h3 class="lab-card-title">Reflected XSS into HTML context with nothing encoded</h3>
-        <p class="lab-card-desc">
-          Fitur pencarian blog memantulkan input pengguna langsung ke respon HTML tanpa proses sanitasi atau contextual encoding.
-        </p>
-      </div>
-      <a href="/lab01" class="btn btn-primary">Start Lab 01 &rarr;</a>
+    <div class="home-hero">
+      <div class="home-hero-eyebrow">Web Application Security Training</div>
+      <h1 class="home-hero-title">Cross-Site Scripting Lab Series</h1>
+      <p class="home-hero-desc">
+        A series of deliberately vulnerable web challenges covering Reflected, Stored, and DOM-based
+        Cross-Site Scripting. Designed for CTF competitions and isolated training environments.
+      </p>
     </div>
 
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 02</div>
-        <h3 class="lab-card-title">Stored XSS into HTML context with nothing encoded</h3>
-        <p class="lab-card-desc">
-          Form komentar blog menyimpan input ke dalam database SQLite dan merendernya kembali ke pengunjung tanpa output encoding.
-        </p>
+    <div class="section-header">All Challenges</div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+
+      <% const labs = [
+        { num: '01', href: '/lab01', type: 'Reflected XSS', title: 'Reflected XSS into HTML context with nothing encoded', desc: 'The search feature reflects raw user input directly into the HTML response without any encoding.' },
+        { num: '02', href: '/lab02', type: 'Stored XSS', title: 'Stored XSS into HTML context with nothing encoded', desc: 'A comment section stores user input in the database and renders it back without output encoding.' },
+        { num: '03', href: '/lab03', type: 'DOM-based XSS', title: 'DOM XSS in document.write sink using location.search', desc: 'A client-side analytics tracker writes an image element using document.write from location.search.' },
+        { num: '04', href: '/lab04', type: 'DOM-based XSS', title: 'DOM XSS in innerHTML sink using location.search', desc: 'A dynamic search banner populates a DOM element via innerHTML from the query parameter.' },
+        { num: '05', href: '/lab05', type: 'DOM-based XSS', title: 'DOM XSS in jQuery anchor href sink using location.search', desc: 'A feedback page sets the Back button href via jQuery .attr() from the returnPath parameter without scheme validation.' },
+        { num: '06', href: '/lab06', type: 'DOM-based XSS', title: 'DOM XSS in jQuery selector sink using hashchange', desc: 'A blog list auto-scrolls by passing location.hash directly into a jQuery :contains() selector.' },
+        { num: '07', href: '/lab07', type: 'Reflected XSS', title: 'Reflected XSS into attribute with angle brackets HTML-encoded', desc: 'The search term is reflected into a value attribute; angle brackets are encoded but quotation marks are not.' },
+        { num: '08', href: '/lab08', type: 'Stored XSS', title: 'Stored XSS into anchor href with double quotes HTML-encoded', desc: 'A comment\'s website field is used as the author link href; double quotes are encoded but URL scheme is not validated.' },
+        { num: '09', href: '/lab09', type: 'Reflected XSS', title: 'Reflected XSS into JavaScript string with angle brackets encoded', desc: 'The search term is reflected into a JS string literal; angle brackets are encoded but single quotes are not escaped.' },
+        { num: '10', href: '/lab10', type: 'DOM-based XSS', title: 'DOM XSS in document.write inside a select element', desc: 'A store stock checker writes an option element via document.write inside a select, from location.search.' },
+      ] %>
+
+      <% labs.forEach(lab => { %>
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem; transition: box-shadow 0.15s;">
+          <div>
+            <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.25rem;">
+              Lab <%= lab.num %> &mdash; <%= lab.type %>
+            </div>
+            <div style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 700; color: var(--color-text); line-height: 1.35; margin-bottom: 0.5rem;">
+              <%= lab.title %>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.55;">
+              <%= lab.desc %>
+            </div>
+          </div>
+          <div>
+            <a href="<%= lab.href %>" class="btn btn-primary btn-sm">Open Challenge</a>
+          </div>
+        </div>
+      <% }); %>
+
+      <div style="background: var(--color-bg); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); padding: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <div>
+          <div style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 0.25rem;">
+            Tool
+          </div>
+          <div style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 700; color: var(--color-text); line-height: 1.35; margin-bottom: 0.5rem;">
+            Challenge Helper Page
+          </div>
+          <div style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.55;">
+            Save and host a custom HTML exploit document on a separate origin. URL is permanent and shareable with the verification bot.
+          </div>
+        </div>
+        <div>
+          <a href="/helper" class="btn btn-secondary btn-sm">Open Helper</a>
+        </div>
       </div>
-      <a href="/lab02" class="btn btn-primary">Start Lab 02 &rarr;</a>
+
     </div>
 
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 03</div>
-        <h3 class="lab-card-title">DOM XSS in document.write sink using location.search</h3>
-        <p class="lab-card-desc">
-          Skrip analitik pelacak menulis elemen gambar ke DOM menggunakan document.write dari parameter query tanpa sanitasi.
-        </p>
-      </div>
-      <a href="/lab03" class="btn btn-primary">Start Lab 03 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 04</div>
-        <h3 class="lab-card-title">DOM XSS in innerHTML sink using location.search</h3>
-        <p class="lab-card-desc">
-          Pencarian blog dinamis memperbarui elemen header hasil pencarian melalui innerHTML dari parameter query tanpa sanitasi.
-        </p>
-      </div>
-      <a href="/lab04" class="btn btn-primary">Start Lab 04 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 05</div>
-        <h3 class="lab-card-title">DOM XSS in jQuery anchor href sink using location.search</h3>
-        <p class="lab-card-desc">
-          Halaman feedback menggunakan jQuery lokal untuk mengatur atribut href tombol Back dari parameter returnPath tanpa validasi skema URL.
-        </p>
-      </div>
-      <a href="/lab05" class="btn btn-primary">Start Lab 05 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 06</div>
-        <h3 class="lab-card-title">DOM XSS in jQuery selector sink using hashchange</h3>
-        <p class="lab-card-desc">
-          Daftar postingan blog menggunakan jQuery $() selector dengan :contains() pada event hashchange tanpa sanitasi input.
-        </p>
-      </div>
-      <a href="/lab06" class="btn btn-primary">Start Lab 06 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 07</div>
-        <h3 class="lab-card-title">Reflected XSS into attribute with angle brackets encoded</h3>
-        <p class="lab-card-desc">
-          Input pencarian dipantulkan ke atribut value; karakter kurung siku di-encode, namun tanda kutip tidak ditangani.
-        </p>
-      </div>
-      <a href="/lab07" class="btn btn-primary">Start Lab 07 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 08</div>
-        <h3 class="lab-card-title">Stored XSS into anchor href with double quotes encoded</h3>
-        <p class="lab-card-desc">
-          Komentar memiliki field website yang digunakan sebagai href link komentator; kutip ganda di-encode, skema URL tidak divalidasi.
-        </p>
-      </div>
-      <a href="/lab08" class="btn btn-primary">Start Lab 08 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 09</div>
-        <h3 class="lab-card-title">Reflected XSS into JavaScript string with angle brackets encoded</h3>
-        <p class="lab-card-desc">
-          Kata pencarian dipantulkan ke variabel JavaScript inline; kurung siku di-encode, kutip tunggal dan backslash tidak ditangani.
-        </p>
-      </div>
-      <a href="/lab09" class="btn btn-primary">Start Lab 09 &rarr;</a>
-    </div>
-
-    <div class="lab-card">
-      <div>
-        <div class="lab-card-num">Lab 10</div>
-        <h3 class="lab-card-title">DOM XSS in document.write inside a select element</h3>
-        <p class="lab-card-desc">
-          Pengecekan stok toko membaca parameter storeId dari query dan menulis option langsung via document.write di dalam tag select.
-        </p>
-      </div>
-      <a href="/lab10" class="btn btn-primary">Start Lab 10 &rarr;</a>
-    </div>
-
-    <div class="lab-card" style="border: 2px dashed #93c5fd; background-color: #f8fafc;">
-      <div>
-        <div class="lab-card-num" style="color: var(--accent-color);">Tooling</div>
-        <h3 class="lab-card-title">Challenge Helper Page</h3>
-        <p class="lab-card-desc">
-          Server pembantu origin terpisah untuk menyimpan dokumen HTML payload/iframe pemicu (maks 10 KB) bagi peserta CTF.
-        </p>
-      </div>
-      <a href="/helper" class="btn btn-secondary">Open Helper &rarr;</a>
-    </div>
   </div>
 </div>
 

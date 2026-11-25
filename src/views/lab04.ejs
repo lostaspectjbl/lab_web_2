@@ -1,64 +1,84 @@
-<%- include('partials/header', { title: 'Lab 04 - DOM XSS in innerHTML sink', currentLab: 'lab04' }) %>
+<%- include('partials/header', { title: 'Search — The Security Dispatch', currentLab: 'lab04' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 04</span>
-    <span>DOM-based XSS</span>
-  </div>
-  <h1 class="lab-title">DOM XSS in innerHTML sink using source location.search</h1>
-  <p class="lab-description">
-    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada fitur pencarian blog dinamis.
-    Skrip sisi klien membaca parameter query dari <code>location.search</code> dan memasukkan nilainya ke dalam
-    elemen DOM menggunakan sink <code>innerHTML</code> tanpa proses sanitasi.
-  </p>
-</div>
+<div class="page-wrap">
+  <div class="main-col">
 
-<div class="card">
-  <form action="/lab04" method="GET" class="search-form">
-    <input 
-      type="text" 
-      name="search" 
-      placeholder="Search blog posts..." 
-      value="<%= search !== null ? search : '' %>"
-      class="form-input"
-    >
-    <button type="submit" class="btn btn-primary">Search</button>
-  </form>
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 04 &mdash; DOM-based XSS</div>
+      <div class="lab-context-title">DOM XSS in innerHTML sink using source location.search</div>
+      <div class="lab-context-desc">
+        A client-side script reads the <code>search</code> parameter from <code>location.search</code>
+        and writes the search header using <code>innerHTML</code> without sanitisation.
+        Note: <code>&lt;script&gt;</code> tags inserted via innerHTML are not executed by modern browsers — use an event-carrying element instead.
+      </div>
+    </div>
 
-  <!-- Container hasil pencarian dinamis yang diisi oleh script klien via innerHTML -->
-  <div id="searchMessage" class="search-results-banner" style="display: none; margin-top: 1.5rem;"></div>
+    <form action="/lab04" method="GET" class="search-form">
+      <input
+        type="text"
+        name="search"
+        placeholder="Search articles..."
+        value="<%= search !== null ? search : '' %>"
+        class="search-input"
+        autocomplete="off"
+      >
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
 
-  <script>
-    function displaySearchQuery() {
-      var query = (new URLSearchParams(window.location.search)).get('search');
-      if (query) {
-        var banner = document.getElementById('searchMessage');
-        banner.style.display = 'block';
-        // VULNERABLE DOM SINK: innerHTML populated directly from location.search
-        banner.innerHTML = '<h3>Results for: ' + query + '</h3>';
-      }
-    }
-    window.addEventListener('DOMContentLoaded', displaySearchQuery);
-  </script>
+    <!-- VULNERABLE DOM SINK: innerHTML populated from location.search -->
+    <div id="searchBanner"></div>
 
-  <% if (search !== null) { %>
-    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+    <script>
+      (function () {
+        var query = (new URLSearchParams(window.location.search)).get('search');
+        if (query) {
+          var banner = document.getElementById('searchBanner');
+          banner.innerHTML = '<div class="search-results-notice">Showing results for <strong>' + query + '</strong></div>';
+        }
+      })();
+    </script>
+
+    <% if (search !== null) { %>
       <% if (results.length > 0) { %>
-        <% results.forEach(post => { %>
-          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
-            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
-            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
-          </div>
-        <% }); %>
+        <div class="post-list">
+          <% results.forEach(post => { %>
+            <div class="post-card">
+              <div class="post-card-title"><%= post.title %></div>
+              <div class="post-card-desc"><%= post.content.substring(0, 160) %>...</div>
+            </div>
+          <% }); %>
+        </div>
       <% } else { %>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
+        <p class="empty-state">No articles matched your search query.</p>
       <% } %>
+    <% } else { %>
+      <p class="empty-state">Use the search box above to find articles.</p>
+    <% } %>
+
+  </div>
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        The sink is <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">element.innerHTML</code>. Script tags are blocked by the HTML5 spec; use <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">&lt;img onerror=...&gt;</code> instead.
+      </p>
     </div>
-  <% } else { %>
-    <div style="margin-top: 1.5rem;">
-      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
     </div>
-  <% } %>
+  </aside>
 </div>
 
 <%- include('partials/footer') %>

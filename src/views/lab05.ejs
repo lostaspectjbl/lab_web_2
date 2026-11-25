@@ -1,70 +1,91 @@
-<%- include('partials/header', { title: 'Lab 05 - DOM XSS in jQuery anchor href sink', currentLab: 'lab05' }) %>
+<%- include('partials/header', { title: 'Feedback — The Security Dispatch', currentLab: 'lab05' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 05</span>
-    <span>DOM-based XSS (jQuery)</span>
+<div class="page-wrap">
+  <div class="main-col">
+
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 05 &mdash; DOM-based XSS</div>
+      <div class="lab-context-title">DOM XSS in jQuery anchor href attribute sink using location.search</div>
+      <div class="lab-context-desc">
+        The feedback page sets the Back button's <code>href</code> attribute via jQuery
+        <code>.attr('href', returnPath)</code> using the <code>returnPath</code> query parameter.
+        URL scheme is not validated, so a <code>javascript:</code> URI can be injected.
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
+      <!-- VULNERABLE ELEMENT: href is set dynamically from returnPath parameter -->
+      <a id="backLink" href="/" class="btn btn-secondary btn-sm">&larr; Back</a>
+      <span class="text-sm text-muted">Reader Feedback</span>
+    </div>
+
+    <% if (submitted) { %>
+      <div class="notice notice-success mb-md">
+        <strong>Thank you.</strong> Your feedback has been received. Click the Back button above to return.
+      </div>
+    <% } %>
+
+    <div class="article-header" style="margin-bottom: 1.5rem;">
+      <h1 class="article-title" style="font-size: 1.5rem;">Send Us Your Feedback</h1>
+      <p class="text-sm text-muted mt-xs">We read every message and use it to improve the publication.</p>
+    </div>
+
+    <form action="/lab05/feedback" method="POST">
+      <input type="hidden" name="returnPath" value="<%= returnPath %>">
+      <div class="form-block">
+        <label class="form-label" for="fb-name">Full Name</label>
+        <input type="text" id="fb-name" name="name" class="form-input" placeholder="Jane Smith" required>
+      </div>
+      <div class="form-block">
+        <label class="form-label" for="fb-email">Email Address</label>
+        <input type="email" id="fb-email" name="email" class="form-input" placeholder="jane@example.com" required>
+      </div>
+      <div class="form-block">
+        <label class="form-label" for="fb-subject">Subject</label>
+        <input type="text" id="fb-subject" name="subject" class="form-input" placeholder="What is this about?" required>
+      </div>
+      <div class="form-block">
+        <label class="form-label" for="fb-message">Message</label>
+        <textarea id="fb-message" name="message" class="form-textarea" rows="5" placeholder="Your message..." required></textarea>
+      </div>
+      <div class="mt-sm">
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+      </div>
+    </form>
+
   </div>
-  <h1 class="lab-title">DOM XSS in jQuery anchor href attribute sink using location.search source</h1>
-  <p class="lab-description">
-    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada halaman formulir feedback.
-    Aplikasi menggunakan library jQuery lokal untuk mengatur atribut <code>href</code> tombol "Back"
-    menggunakan nilai dari parameter query <code>returnPath</code> tanpa memvalidasi skema URL.
-  </p>
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        jQuery 1.8.3 (local) sets the Back button href via <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">$('#backLink').attr('href', returnPath)</code> with no scheme validation.
+      </p>
+    </div>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
+    </div>
+  </aside>
 </div>
 
-<div class="card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-    <!-- VULNERABLE ELEMENT: href attribute target -->
-    <a id="backLink" class="btn btn-secondary" href="/">
-      &larr; Back
-    </a>
-    <span style="font-size: 0.85rem; color: var(--text-muted);">Feedback Center</span>
-  </div>
-
-  <% if (submitted) { %>
-    <div style="padding: 1rem 1.25rem; background-color: #ecfdf5; border-left: 4px solid var(--success-color); border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
-      <h4 style="color: #065f46; margin-bottom: 0.25rem;">Feedback Received!</h4>
-      <p style="color: #047857; font-size: 0.9rem;">Thank you for your feedback. You may now click the "Back" button above to return.</p>
-    </div>
-  <% } %>
-
-  <h3 class="card-title">Send Us Your Feedback</h3>
-  <form action="/lab05/feedback" method="POST">
-    <input type="hidden" name="returnPath" value="<%= returnPath %>">
-    
-    <div class="form-group">
-      <label for="name" class="form-label">Full Name</label>
-      <input type="text" id="name" name="name" class="form-input" placeholder="Your name" required>
-    </div>
-
-    <div class="form-group">
-      <label for="email" class="form-label">Email Address</label>
-      <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>
-    </div>
-
-    <div class="form-group">
-      <label for="subject" class="form-label">Subject</label>
-      <input type="text" id="subject" name="subject" class="form-input" placeholder="What is this regarding?" required>
-    </div>
-
-    <div class="form-group">
-      <label for="message" class="form-label">Message</label>
-      <textarea id="message" name="message" class="form-textarea" rows="4" placeholder="Your comments or questions..." required></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Submit Feedback</button>
-  </form>
-</div>
-
-<!-- Local jQuery 1.8.x library (bukan CDN) -->
 <script src="/js/vendor/jquery-1.8.3.min.js"></script>
 <script>
-  $(function() {
+  $(function () {
     var urlParams = new URLSearchParams(window.location.search);
     var returnPath = urlParams.get('returnPath');
     if (returnPath) {
-      // VULNERABLE DOM SINK: .attr('href', ...) tanpa validasi skema URL (e.g. javascript:)
+      // VULNERABLE DOM SINK: .attr('href', ...) with no URL scheme validation
       $('#backLink').attr('href', returnPath);
     }
   });

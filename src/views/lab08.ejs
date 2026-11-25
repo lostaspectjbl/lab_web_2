@@ -1,91 +1,116 @@
-<%- include('partials/header', { title: 'Lab 08 - Stored XSS in anchor href attribute', currentLab: 'lab08' }) %>
+<%- include('partials/header', { title: post.title + ' — The Security Dispatch', currentLab: 'lab08' }) %>
 
-<div class="lab-banner">
-  <div class="lab-meta">
-    <span class="lab-pill">Lab 08</span>
-    <span>Stored Attribute XSS</span>
-  </div>
-  <h1 class="lab-title">Stored XSS into anchor href attribute with double quotes HTML-encoded</h1>
-  <p class="lab-description">
-    Lab ini berisi kerentanan Stored Cross-Site Scripting pada kolom "Website" form komentar.
-    Aplikasi meng-encode tanda kutip ganda (<code>"</code>) pada URL website, namun tidak memvalidasi skema URL (seperti <code>javascript:</code>).
-  </p>
-</div>
+<div class="page-wrap">
+  <div class="main-col">
 
-<article class="card">
-  <header class="post-header">
-    <h2 class="post-title"><%= post.title %></h2>
-    <div class="post-meta">
-      By <strong><%= post.author %></strong> &bull; Published on <%= post.created_at %>
+    <div class="lab-context">
+      <div class="lab-context-eyebrow">Lab 08 &mdash; Stored XSS</div>
+      <div class="lab-context-title">Stored XSS into anchor href attribute with double quotes HTML-encoded</div>
+      <div class="lab-context-desc">
+        The comment form has a Website field. Its value is stored and used as the <code>href</code> attribute of the
+        commenter's name link. Double quotes (<code>"</code>) are encoded, but the URL scheme is not validated —
+        a <code>javascript:</code> URI executes when the link is clicked.
+      </div>
     </div>
-  </header>
-  <div class="post-content">
-    <p><%= post.content %></p>
-  </div>
-</article>
 
-<section class="card comments-section">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <h3 class="comments-header" style="margin-bottom: 0;">
-      <span>Comments (<%= comments.length %>)</span>
-    </h3>
-    <form action="/lab08/reset" method="POST" style="display: inline;">
-      <button type="submit" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Reset Comments</button>
-    </form>
-  </div>
-
-  <div class="comment-list">
-    <% if (comments.length === 0) { %>
-      <p style="color: var(--text-muted);">No comments yet.</p>
-    <% } else { %>
-      <% comments.forEach(comment => { %>
-        <div class="comment-item">
-          <div class="comment-author">
-            <span>
-              <% if (comment.website) { %>
-                <!-- VULNERABLE ANCHOR SINK: Double quotes encoded, but URL scheme not validated -->
-                <a id="author-link-<%= comment.id %>" href="<%- comment.website %>" style="color: var(--primary-color); font-weight: 700; text-decoration: underline;">
-                  <%= comment.author %>
-                </a>
-              <% } else { %>
-                <strong><%= comment.author %></strong>
-              <% } %>
-            </span>
-            <span class="comment-date"><%= comment.created_at %></span>
-          </div>
-          <!-- Body komentar di-encode dengan aman menggunakan <%= %> -->
-          <div class="comment-body">
-            <%= comment.content %>
-          </div>
+    <article>
+      <header class="article-header">
+        <span class="article-category">Security Research</span>
+        <h1 class="article-title"><%= post.title %></h1>
+        <div class="article-meta">
+          <span><%= post.author %></span>
+          <span class="sep">&mdash;</span>
+          <span><%= post.created_at %></span>
         </div>
-      <% }); %>
-    <% } %>
+      </header>
+      <div class="article-body">
+        <p><%= post.content %></p>
+      </div>
+    </article>
+
+    <hr class="divider">
+
+    <section>
+      <div class="flex-between mb-md">
+        <div class="section-header" style="margin-bottom:0; border:none; padding:0;">
+          Comments (<%= comments.length %>)
+        </div>
+        <form action="/lab08/reset" method="POST">
+          <button type="submit" class="btn btn-danger">Reset Comments</button>
+        </form>
+      </div>
+
+      <div class="comment-list">
+        <% if (comments.length === 0) { %>
+          <p class="empty-state">No comments yet.</p>
+        <% } else { %>
+          <% comments.forEach(comment => { %>
+            <div class="comment-item">
+              <div class="comment-byline">
+                <span class="comment-author">
+                  <% if (comment.website) { %>
+                    <!-- VULNERABLE SINK: href attribute; double quotes encoded, scheme not validated -->
+                    <a href="<%- comment.website %>"><%= comment.author %></a>
+                  <% } else { %>
+                    <%= comment.author %>
+                  <% } %>
+                </span>
+                <span class="comment-date"><%= comment.created_at %></span>
+              </div>
+              <!-- Comment body is safely encoded -->
+              <div class="comment-body"><%= comment.content %></div>
+            </div>
+          <% }); %>
+        <% } %>
+      </div>
+
+      <div class="form-section-title">Leave a Comment</div>
+
+      <form action="/lab08/comment" method="POST">
+        <input type="hidden" name="postId" value="<%= post.id %>">
+        <div class="form-block">
+          <label class="form-label" for="author08">Name</label>
+          <input type="text" id="author08" name="author" class="form-input" placeholder="Your name" required maxlength="100">
+        </div>
+        <div class="form-block">
+          <label class="form-label" for="website08">Website <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+          <input type="text" id="website08" name="website" class="form-input" placeholder="https://yoursite.com">
+          <div class="form-hint">Your name will become a link pointing to this URL.</div>
+        </div>
+        <div class="form-block">
+          <label class="form-label" for="content08">Comment</label>
+          <textarea id="content08" name="content" class="form-textarea" placeholder="Write your comment..." required rows="4"></textarea>
+        </div>
+        <div class="mt-sm">
+          <button type="submit" class="btn btn-primary">Post Comment</button>
+        </div>
+      </form>
+    </section>
+
   </div>
-
-  <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
-    <h4 style="margin-bottom: 1rem; font-size: 1.15rem;">Leave a Comment</h4>
-    <form action="/lab08/comment" method="POST">
-      <input type="hidden" name="postId" value="<%= post.id %>">
-      
-      <div class="form-group">
-        <label for="author" class="form-label">Name</label>
-        <input type="text" id="author" name="author" class="form-input" placeholder="Your name" required maxlength="100">
-      </div>
-
-      <div class="form-group">
-        <label for="website" class="form-label">Website (Optional)</label>
-        <input type="text" id="website" name="website" class="form-input" placeholder="https://yourwebsite.com">
-        <small style="color: var(--text-muted); font-size: 0.8rem;">Nama komentator akan menjadi tautan yang mengarah ke website ini.</small>
-      </div>
-
-      <div class="form-group">
-        <label for="content" class="form-label">Comment</label>
-        <textarea id="content" name="content" class="form-textarea" placeholder="Write your thoughts..." required rows="4"></textarea>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Post Comment</button>
-    </form>
-  </div>
-</section>
+  <aside class="sidebar">
+    <div class="sidebar-block">
+      <div class="sidebar-title">About This Lab</div>
+      <p class="text-sm text-muted" style="line-height: 1.6;">
+        The website URL is stored verbatim (with <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">"</code> encoded) and reflected into an <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">href</code>. Submit <code style="font-size:0.8em; background:var(--color-code-bg); padding:0.1em 0.3em; border-radius:2px;">javascript:alert(1)</code> as the website.
+      </p>
+    </div>
+    <div class="sidebar-block">
+      <div class="sidebar-title">Labs</div>
+      <ul class="sidebar-nav">
+        <li><a href="/lab01">Reflected XSS — HTML context <span class="lab-num">01</span></a></li>
+        <li><a href="/lab02">Stored XSS — HTML context <span class="lab-num">02</span></a></li>
+        <li><a href="/lab03">DOM XSS — document.write <span class="lab-num">03</span></a></li>
+        <li><a href="/lab04">DOM XSS — innerHTML <span class="lab-num">04</span></a></li>
+        <li><a href="/lab05">DOM XSS — jQuery href <span class="lab-num">05</span></a></li>
+        <li><a href="/lab06">DOM XSS — hashchange <span class="lab-num">06</span></a></li>
+        <li><a href="/lab07">Reflected XSS — attribute <span class="lab-num">07</span></a></li>
+        <li><a href="/lab08">Stored XSS — anchor href <span class="lab-num">08</span></a></li>
+        <li><a href="/lab09">Reflected XSS — JS string <span class="lab-num">09</span></a></li>
+        <li><a href="/lab10">DOM XSS — select element <span class="lab-num">10</span></a></li>
+      </ul>
+    </div>
+  </aside>
+</div>
 
 <%- include('partials/footer') %>
