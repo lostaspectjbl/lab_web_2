@@ -99,6 +99,56 @@ Terinspirasi dari modul XSS pada PortSwigger Web Security Academy, lab ini menya
   Halaman formulir feedback menggunakan jQuery lokal (`1.8.3`) untuk mengatur atribut `href` pada tombol "Back" (`$('#backLink').attr('href', returnPath)`). Karena skema URL tidak divalidasi, penyerang dapat menyuntikkan skema `javascript:`.
 - **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB05`.
 
+### 6. Lab 06: DOM XSS in jQuery selector sink using a hashchange event
+- **URL**: `http://localhost:3000/lab06`
+- **Mekanisme**:
+  Postingan blog mendengarkan event `hashchange` dan menyalurkan nilai `location.hash` ke selector jQuery (`$('section.blog-list h2:contains(' + query + ')')`). Di jQuery 1.8.x, string dengan tag HTML (seperti `<img src=x onerror=...>`) menyebabkan parser mengevaluasi elemen DOM baru.
+- **Pemicu**: Gunakan [Challenge Helper Page](#challenge-helper-page) untuk mengirim dokumen HTML pemicu via iframe lintas-origin.
+- **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB06`.
+
+### 7. Lab 07: Reflected XSS into attribute with angle brackets HTML-encoded
+- **URL**: `http://localhost:3000/lab07`
+- **Parameter**: `search` (contoh: `/lab07?search=test`)
+- **Mekanisme**:
+  Kata pencarian dipantulkan ke atribut `value="..."` pada tag `<input>`. Karakter `<` dan `>` di-encode oleh server, namun tanda kutip (`"` dan `'`) tidak di-encode sehingga penyerang dapat keluar dari atribut menggunakan event listener (contoh: `" onfocus="alert(1)" autofocus="`).
+- **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB07`.
+
+### 8. Lab 08: Stored XSS into anchor href attribute with double quotes HTML-encoded
+- **URL**: `http://localhost:3000/lab08`
+- **Fitur**: Form komentar blog dengan kolom Website.
+- **Mekanisme**:
+  Komentar pembaca disimpan ke SQLite dengan parameterized query. Kolom "Website" digunakan sebagai atribut `href` nama komentator. Server meng-encode tanda kutip ganda (`"`), namun tidak memvalidasi skema URL sehingga skema `javascript:` dapat dieksekusi saat tautan diklik.
+- **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB08`.
+
+### 9. Lab 09: Reflected XSS into a JavaScript string with angle brackets HTML encoded
+- **URL**: `http://localhost:3000/lab09`
+- **Parameter**: `search` (contoh: `/lab09?search=test`)
+- **Mekanisme**:
+  Kata pencarian dipantulkan ke dalam variabel JavaScript inline `var searchTerms = '...';`. Karakter kurung siku `<` dan `>` di-encode, namun tanda kutip tunggal (`'`) dan backslash (`\`) tidak di-escape, memungkinkan *string literal breakout* (contoh: `';alert(1);//`).
+- **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB09`.
+
+### 10. Lab 10: DOM XSS in document.write sink using location.search inside a select element
+- **URL**: `http://localhost:3000/lab10`
+- **Parameter**: `storeId` (contoh: `/lab10?storeId=London`)
+- **Mekanisme**:
+  Halaman produk memiliki dropdown `<select>`. Skrip sisi klien membaca parameter query `storeId` dan menulis opsi toko langsung menggunakan `document.write` di dalam tag `<select>`. Penyerang dapat menutup tag `</select>` dan menyuntikkan elemen HTML baru (contoh: `storeId=London"></select><img src=x onerror=alert(1)>`).
+- **Flag Cookie**: Cookie `flag` diset dengan nilai `$FLAG_LAB10`.
+
+---
+
+## 🛠️ Challenge Helper Page (Exploit Server)
+- **URL**: `http://localhost:3001/helper` (atau via lab utama `http://localhost:3000/helper`)
+- **Origin**: `http://localhost:3001` (Origin terpisah dari lab utama `http://localhost:3000`).
+- **Fitur**:
+  - Menyimpan satu dokumen HTML exploit per tim (`team_id`) dengan batas ukuran maksimum **10 KB**.
+  - Menyajikan dokumen mentah pada URL tetap `http://localhost:3001/helper/<team_id>` dengan header `Content-Type: text/html`.
+
+---
+
+## 🔄 Endpoint Reset Data Internal
+- **Endpoint**: `POST /reset` (atau via tombol reset pada halaman komentar Lab 02 & Lab 08).
+- **Fungsi**: Mengosongkan data komentar yang dikirim peserta dan mengembalikan database SQLite ke kondisi seed bersih. Dapat dipanggil via cron job berkala.
+
 ---
 
 ## ⚙️ Cara Menjalankan

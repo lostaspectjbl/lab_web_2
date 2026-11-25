@@ -1,0 +1,56 @@
+<%- include('partials/header', { title: 'Lab 07 - Reflected XSS into attribute with angle brackets encoded', currentLab: 'lab07' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 07</span>
+    <span>Attribute Context XSS</span>
+  </div>
+  <h1 class="lab-title">Reflected XSS into attribute with angle brackets HTML-encoded</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan reflected XSS pada atribut tag input pencarian. Karakter kurung siku <code>&lt;</code> dan <code>&gt;</code>
+    di-encode oleh server, namun tanda kutip ganda (<code>"</code>) dan tunggal (<code>'</code>) tidak di-encode.
+  </p>
+</div>
+
+<div class="card">
+  <form action="/lab07" method="GET" class="search-form">
+    <!-- VULNERABLE CONTEXT: value attribute contains user input with angle brackets encoded but quotes unencoded -->
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search blog posts..." 
+      value="<%- search !== null ? search : '' %>"
+      class="form-input"
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (search !== null) { %>
+    <div class="search-results-banner">
+      <!-- Output di luar atribut di-encode dengan aman -->
+      <h3>Results for: <%= search %></h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Found <%= results.length %> post(s) matching your query.
+      </p>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+      <% if (results.length > 0) { %>
+        <% results.forEach(post => { %>
+          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div style="margin-top: 1.5rem;">
+      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

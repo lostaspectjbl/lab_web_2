@@ -32,6 +32,10 @@ const lab03Routes = require('./routes/lab03');
 const lab04Routes = require('./routes/lab04');
 const lab05Routes = require('./routes/lab05');
 const lab06Routes = require('./routes/lab06');
+const lab07Routes = require('./routes/lab07');
+const lab08Routes = require('./routes/lab08');
+const lab09Routes = require('./routes/lab09');
+const lab10Routes = require('./routes/lab10');
 const helperRoutes = require('./routes/helper');
 
 app.use('/', indexRoutes);
@@ -41,6 +45,10 @@ app.use('/lab03', lab03Routes);
 app.use('/lab04', lab04Routes);
 app.use('/lab05', lab05Routes);
 app.use('/lab06', lab06Routes);
+app.use('/lab07', lab07Routes);
+app.use('/lab08', lab08Routes);
+app.use('/lab09', lab09Routes);
+app.use('/lab10', lab10Routes);
 app.use('/helper', helperRoutes);
 
 // Lightweight tracking endpoint for Lab 03 (transparent 1x1 GIF)

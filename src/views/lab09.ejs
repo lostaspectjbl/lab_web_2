@@ -1,0 +1,68 @@
+<%- include('partials/header', { title: 'Lab 09 - Reflected XSS into JavaScript string', currentLab: 'lab09' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 09</span>
+    <span>JavaScript String Context XSS</span>
+  </div>
+  <h1 class="lab-title">Reflected XSS into a JavaScript string with angle brackets HTML encoded</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan reflected Cross-Site Scripting di dalam variabel JavaScript inline (<code>var searchTerms = '...';</code>).
+    Server meng-encode karakter <code>&lt;</code> dan <code>&gt;</code> sehingga Anda tidak dapat menutup tag <code>&lt;script&gt;</code>,
+    namun tanda kutip tunggal (<code>'</code>) dan karakter backslash (<code>\</code>) tidak ditangani.
+  </p>
+</div>
+
+<div class="card">
+  <form action="/lab09" method="GET" class="search-form">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search blog posts..." 
+      value="<%= search !== null ? search : '' %>"
+      class="form-input"
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (search !== null) { %>
+    <div class="search-results-banner">
+      <!-- Output teks HTML biasa di-encode dengan aman -->
+      <h3>Results for: <%= search %></h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Found <%= results.length %> post(s) matching your query.
+      </p>
+    </div>
+
+    <!-- VULNERABLE INLINE JAVASCRIPT CONTEXT -->
+    <script>
+      var searchTerms = '<%- search %>';
+      if (searchTerms) {
+        // Analytics image call
+        var trackImg = document.createElement('img');
+        trackImg.src = '/images/tracker.gif?searchTerms=' + encodeURIComponent(searchTerms);
+        trackImg.style.display = 'none';
+        document.body.appendChild(trackImg);
+      }
+    </script>
+
+    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+      <% if (results.length > 0) { %>
+        <% results.forEach(post => { %>
+          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div style="margin-top: 1.5rem;">
+      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,60 @@
+<%- include('partials/header', { title: 'Lab 10 - DOM XSS in document.write inside select element', currentLab: 'lab10' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 10</span>
+    <span>DOM-based XSS (Select Context)</span>
+  </div>
+  <h1 class="lab-title">DOM XSS in document.write sink using source location.search inside a select element</h1>
+  <p class="lab-description">
+    Lab ini mensimulasikan fitur pengecekan ketersediaan stok produk di berbagai cabang toko.
+    Skrip sisi klien membaca nilai <code>storeId</code> dari <code>location.search</code> dan menulis elemen
+    <code>&lt;option&gt;</code> langsung di dalam elemen <code>&lt;select&gt;</code> menggunakan <code>document.write</code> tanpa sanitasi.
+  </p>
+</div>
+
+<div class="card">
+  <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 280px;">
+      <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-main);"><%= product.name %></h2>
+      <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary-color); margin-bottom: 1rem;">
+        <%= product.price %>
+      </div>
+      <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+        <%= product.description %>
+      </p>
+
+      <div style="background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+        <h4 style="margin-bottom: 0.75rem; font-size: 1rem;">Check Store Availability</h4>
+
+        <form action="/lab10/check-stock" method="POST" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="storeSelect" style="font-size: 0.875rem; font-weight: 600;">Store:</label>
+          
+          <!-- VULNERABLE SELECT ELEMENT: document.write called directly inside select -->
+          <select name="storeId" id="storeSelect" class="form-input" style="max-width: 250px;">
+            <script>
+              var storeId = (new URLSearchParams(window.location.search)).get('storeId');
+              if (storeId) {
+                // VULNERABLE DOM SINK: Writes unescaped user input into select options
+                document.write('<option selected value="' + storeId + '">' + storeId + '</option>');
+              }
+            </script>
+            <option value="London">London</option>
+            <option value="Paris">Paris</option>
+            <option value="Milan">Milan</option>
+          </select>
+
+          <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1rem;">Check Stock</button>
+        </form>
+
+        <% if (storeStock !== null) { %>
+          <div style="margin-top: 1rem; padding: 0.75rem 1rem; background-color: #ecfdf5; border-left: 3px solid var(--success-color); border-radius: var(--radius-sm); font-size: 0.9rem; color: #065f46;">
+            <strong>In Stock:</strong> <%= storeStock %> units available in the selected store location.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

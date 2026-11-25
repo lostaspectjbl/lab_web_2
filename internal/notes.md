@@ -247,3 +247,168 @@ Karena penyerang perlu memicu event `hashchange` pada browser korban tanpa inter
    ```
 3. Jangan pernah menggabungkan input pengguna mentah ke dalam parameter selector jQuery.
 
+---
+
+## Lab 07: Reflected XSS into attribute with angle brackets HTML-encoded
+
+### 🎯 Tujuan Pembelajaran
+Memahami perbedaan antara *HTML Body context* dan *HTML Attribute context*. Memahami bahwa sekadar meng-encode kurung siku (`<` dan `>`) tidak cukup untuk mencegah XSS jika input pengguna dipantulkan ke dalam atribut HTML di mana tanda kutip (`"` atau `'`) belum di-encode.
+
+### 🔍 Analisis Kerentanan
+- **Vulnerability Type**: Reflected XSS (Attribute Context)
+- **Source**: `req.query.search`
+- **Filter**: Hanya `<` dan `>` yang di-encode (`&lt;` dan `&gt;`). Tanda kutip `"` dan `'` tidak ditangani.
+- **Sink**: Atribut `value` pada tag `<input>`:
+  ```html
+  <input type="text" name="search" value="<%- search %>">
+  ```
+- **Penyebab**: Karena tanda kutip ganda (`"`) tidak di-encode, penyerang dapat keluar dari atribut `value` dan menambahkan atribut baru pembawa event seperti `onfocus` atau `onmouseover`.
+
+### 💡 Contoh Eksploitasi
+```text
+" onfocus="alert(document.cookie)" autofocus="
+```
+atau
+```text
+" onmouseover="alert(document.cookie)
+```
+Hasil pada HTML:
+```html
+<input type="text" name="search" value="" onfocus="alert(document.cookie)" autofocus="">
+```
+Browser akan otomatis memberikan fokus pada elemen tersebut saat halaman selesai dimuat (`autofocus`), yang langsung memicu event handler `onfocus` tanpa perlu klik pengguna.
+
+URL:
+`http://localhost:3000/lab07?search=%22%20onfocus=%22alert(document.cookie)%22%20autofocus=%22`
+
+### 🛡️ Remediasi (Secure Coding)
+1. Lakukan contextual output encoding yang lengkap:
+   - Encode karakter `"` menjadi `&quot;`
+   - Encode karakter `'` menjadi `&#39;`
+   - Encode `&` menjadi `&amp;`
+2. Di EJS, gunakan tag escaped `<%= %>` yang meng-encode tanda kutip ganda secara otomatis.
+
+---
+
+## Lab 08: Stored XSS into anchor href attribute with double quotes HTML-encoded
+
+### 🎯 Tujuan Pembelajaran
+Memahami kerentanan XSS pada atribut navigasi (`href`) yang disimpan permanen di database. Memahami bahwa melakukan entity encoding terhadap tanda kutip ganda (`&quot;`) mencegah penyerang keluar dari atribut, namun TIDAK mencegah eksekusi skema URI berbahaya seperti `javascript:`.
+
+### 🔍 Analisis Kerentanan
+- **Vulnerability Type**: Stored XSS (URI Scheme Injection)
+- **Source**: Input form POST `/lab08/comment` (`req.body.website`).
+- **Filter**: Tanda kutip ganda (`"`) di-encode menjadi `&quot;`, tetapi skema URL tidak divalidasi.
+- **Sink**: Atribut `href` pada nama komentator:
+  ```html
+  <a href="<%- comment.website %>"><%= comment.author %></a>
+  ```
+- **Penyebab**: Browser mendukung pseudo-protocol `javascript:` pada atribut tautan `href`. Jika pengguna mengklik tautan tersebut, kode JavaScript akan dieksekusi dalam konteks origin halaman.
+
+### 💡 Contoh Eksploitasi
+Isi kolom Website saat mengirim komentar dengan:
+```text
+javascript:alert(document.cookie)
+```
+Tautan yang dihasilkan:
+```html
+<a href="javascript:alert(document.cookie)">Attacker</a>
+```
+Ketika korban mengklik nama komentator, script payload akan langsung dieksekusi.
+
+### 🛡️ Remediasi (Secure Coding)
+1. Terapkan whitelist validasi skema URL:
+   ```javascript
+   function isSafeUrl(url) {
+     try {
+       const parsed = new URL(url, 'http://localhost');
+       return ['http:', 'https:'].includes(parsed.protocol);
+     } catch {
+       return false;
+     }
+   }
+   ```
+2. Tolak atau netralkan URL jika skemanya adalah `javascript:`, `data:`, atau `vbscript:`.
+
+---
+
+## Lab 09: Reflected XSS into a JavaScript string with angle brackets HTML encoded
+
+### 🎯 Tujuan Pembelajaran
+Memahami konteks injeksi di dalam blok skrip JavaScript inline (`<script> var x = '...'; </script>`). Memahami bahwa HTML-encoding (`&lt;`, `&gt;`) efektif mencegah penyerang keluar dari tag `<script>`, namun penyerang dapat keluar dari string JavaScript literal (`'...'`) jika karakter kutip tunggal (`'`) atau backslash (`\`) tidak di-escape.
+
+### 🔍 Analisis Kerentanan
+- **Vulnerability Type**: Reflected XSS (JavaScript Literal Context)
+- **Source**: `req.query.search`
+- **Filter**: `<` dan `>` di-encode menjadi `&lt;` dan `&gt;`.
+- **Sink**: Di dalam variabel JavaScript inline:
+  ```javascript
+  var searchTerms = '<%- search %>';
+  ```
+- **Penyebab**: Karakter tanda kutip tunggal (`'`) tidak di-escape. Penyerang dapat menutup literal string `'` dan menambahkan operator ekspresi atau statement JavaScript baru.
+
+### 💡 Contoh Eksploitasi
+Input:
+```text
+';alert(document.cookie);//
+```
+atau menggunakan ekspresi aritmatika:
+```text
+'-alert(document.cookie)-'
+```
+Kode JavaScript yang terbentuk di browser:
+```javascript
+var searchTerms = '';alert(document.cookie);//';
+```
+Browser akan mengeksekusi statement `alert(document.cookie)` saat skrip diparsing dan dijalankan.
+
+URL:
+`http://localhost:3000/lab09?search=%27;alert(document.cookie);//`
+
+### 🛡️ Remediasi (Secure Coding)
+1. Hindari menaruh data dinamis langsung ke dalam inline script string literal.
+2. Gunakan serialization aman seperti `JSON.stringify(data)` yang secara otomatis meng-escape tanda kutip dan karakter kontrol:
+   ```javascript
+   var searchTerms = <%- JSON.stringify(search || '') %>;
+   ```
+3. Gunakan atribut data HTML (data attributes, e.g. `<div id="config" data-search="<%= search %>">`) lalu baca lewat DOM API di JavaScript.
+
+---
+
+## Lab 10: DOM XSS in document.write sink using location.search inside a select element
+
+### 🎯 Tujuan Pembelajaran
+Memahami konteks spesifik elemen formulir HTML (`<select>`). Memahami bahwa elemen teks biasa yang disuntikkan ke dalam tag `<select>` tidak dapat dieksekusi secara langsung, tetapi jika sink `document.write` memungkinkan penyerang menutup tag penutup (`</select>`), penyerang dapat keluar dari konteks elemen formulir dan menyuntikkan elemen HTML aktif baru.
+
+### 🔍 Analisis Kerentanan
+- **Vulnerability Type**: DOM-based XSS (Context Breakout inside Select)
+- **Source**: `location.search` (`(new URLSearchParams(window.location.search)).get('storeId')`)
+- **Sink**: `document.write('<option selected value="' + storeId + '">' + storeId + '</option>')` di dalam elemen `<select>`.
+- **Penyebab**: `document.write` menulis string mentah tanpa sanitasi langsung di dalam pohon elemen `<select>`.
+
+### 💡 Contoh Eksploitasi
+Jika penyerang hanya menyuntikkan `<script>alert(1)</script>`, script tidak akan dieksekusi karena berada di dalam konteks `<select>`. Penyerang harus menutup elemen `</select>` terlebih dahulu:
+```text
+storeId=London"></select><img src=x onerror=alert(document.cookie)>
+```
+Markup yang dihasilkan oleh `document.write`:
+```html
+<option selected value="London"></select><img src=x onerror=alert(document.cookie)></option>
+```
+Parser browser menutup tag `<select>`, sehingga tag `<img src=x onerror=...>` dianggap sebagai elemen valid di level induk yang memicu error dan mengeksekusi payload.
+
+URL:
+`http://localhost:3000/lab10?storeId=London%22%3E%3C/select%3E%3Cimg%20src=x%20onerror=alert(document.cookie)%3E`
+
+### 🛡️ Remediasi (Secure Coding)
+1. Hindari `document.write`. Gunakan API DOM standar:
+   ```javascript
+   var option = document.createElement('option');
+   option.value = storeId;
+   option.textContent = storeId;
+   option.selected = true;
+   document.getElementById('storeSelect').appendChild(option);
+   ```
+2. Dengan menggunakan `option.textContent`, browser menjamin nilai hanya diperlakukan sebagai teks biasa, bukan markup HTML.
+
+
