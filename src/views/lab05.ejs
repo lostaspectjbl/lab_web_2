@@ -1,0 +1,73 @@
+<%- include('partials/header', { title: 'Lab 05 - DOM XSS in jQuery anchor href sink', currentLab: 'lab05' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 05</span>
+    <span>DOM-based XSS (jQuery)</span>
+  </div>
+  <h1 class="lab-title">DOM XSS in jQuery anchor href attribute sink using location.search source</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada halaman formulir feedback.
+    Aplikasi menggunakan library jQuery lokal untuk mengatur atribut <code>href</code> tombol "Back"
+    menggunakan nilai dari parameter query <code>returnPath</code> tanpa memvalidasi skema URL.
+  </p>
+</div>
+
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+    <!-- VULNERABLE ELEMENT: href attribute target -->
+    <a id="backLink" class="btn btn-secondary" href="/">
+      &larr; Back
+    </a>
+    <span style="font-size: 0.85rem; color: var(--text-muted);">Feedback Center</span>
+  </div>
+
+  <% if (submitted) { %>
+    <div style="padding: 1rem 1.25rem; background-color: #ecfdf5; border-left: 4px solid var(--success-color); border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+      <h4 style="color: #065f46; margin-bottom: 0.25rem;">Feedback Received!</h4>
+      <p style="color: #047857; font-size: 0.9rem;">Thank you for your feedback. You may now click the "Back" button above to return.</p>
+    </div>
+  <% } %>
+
+  <h3 class="card-title">Send Us Your Feedback</h3>
+  <form action="/lab05/feedback" method="POST">
+    <input type="hidden" name="returnPath" value="<%= returnPath %>">
+    
+    <div class="form-group">
+      <label for="name" class="form-label">Full Name</label>
+      <input type="text" id="name" name="name" class="form-input" placeholder="Your name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email" class="form-label">Email Address</label>
+      <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>
+    </div>
+
+    <div class="form-group">
+      <label for="subject" class="form-label">Subject</label>
+      <input type="text" id="subject" name="subject" class="form-input" placeholder="What is this regarding?" required>
+    </div>
+
+    <div class="form-group">
+      <label for="message" class="form-label">Message</label>
+      <textarea id="message" name="message" class="form-textarea" rows="4" placeholder="Your comments or questions..." required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+  </form>
+</div>
+
+<!-- Local jQuery 1.8.x library (bukan CDN) -->
+<script src="/js/vendor/jquery-1.8.3.min.js"></script>
+<script>
+  $(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var returnPath = urlParams.get('returnPath');
+    if (returnPath) {
+      // VULNERABLE DOM SINK: .attr('href', ...) tanpa validasi skema URL (e.g. javascript:)
+      $('#backLink').attr('href', returnPath);
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,73 @@
+<%- include('partials/header', { title: 'Lab 02 - Stored XSS into HTML context', currentLab: 'lab02' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 02</span>
+    <span>Stored XSS</span>
+  </div>
+  <h1 class="lab-title">Stored XSS into HTML context with nothing encoded</h1>
+  <p class="lab-description">
+    Lab ini mensimulasikan artikel blog dengan fitur komentar pembaca. Komentar disimpan di database SQLite
+    dan dirender langsung ke dalam halaman tanpa encoding.
+  </p>
+</div>
+
+<article class="card">
+  <header class="post-header">
+    <h2 class="post-title"><%= post.title %></h2>
+    <div class="post-meta">
+      By <strong><%= post.author %></strong> &bull; Published on <%= post.created_at %>
+    </div>
+  </header>
+  <div class="post-content">
+    <p><%= post.content %></p>
+  </div>
+</article>
+
+<section class="card comments-section">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h3 class="comments-header" style="margin-bottom: 0;">
+      <span>Comments (<%= comments.length %>)</span>
+    </h3>
+    <form action="/lab02/reset" method="POST" style="display: inline;">
+      <button type="submit" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Reset Comments</button>
+    </form>
+  </div>
+
+  <div class="comment-list">
+    <% if (comments.length === 0) { %>
+      <p style="color: var(--text-muted);">No comments yet. Be the first to leave a comment!</p>
+    <% } else { %>
+      <% comments.forEach(comment => { %>
+        <div class="comment-item">
+          <div class="comment-author">
+            <span><%= comment.author %></span>
+            <span class="comment-date"><%= comment.created_at %></span>
+          </div>
+          <!-- VULNERABILITY INTENDED FOR CTF: unencoded stored comment content rendered to HTML -->
+          <div class="comment-body">
+            <%- comment.content %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+  </div>
+
+  <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+    <h4 style="margin-bottom: 1rem; font-size: 1.15rem;">Leave a Comment</h4>
+    <form action="/lab02/comment" method="POST">
+      <input type="hidden" name="postId" value="<%= post.id %>">
+      <div class="form-group">
+        <label for="author" class="form-label">Name / Author</label>
+        <input type="text" id="author" name="author" class="form-input" placeholder="Your name" required maxlength="100">
+      </div>
+      <div class="form-group">
+        <label for="content" class="form-label">Comment</label>
+        <textarea id="content" name="content" class="form-textarea" placeholder="Write your thoughts..." required rows="4"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

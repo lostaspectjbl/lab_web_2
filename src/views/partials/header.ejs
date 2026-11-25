@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'XSS Lab Series' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="/" class="brand-link">
+        <span>🛡️ XSS Lab Series</span>
+        <span class="brand-badge">CTF Edition</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/lab01" class="<%= currentLab === 'lab01' ? 'active' : '' %>">Lab 01</a></li>
+        <li><a href="/lab02" class="<%= currentLab === 'lab02' ? 'active' : '' %>">Lab 02</a></li>
+        <li><a href="/lab03" class="<%= currentLab === 'lab03' ? 'active' : '' %>">Lab 03</a></li>
+        <li><a href="/lab04" class="<%= currentLab === 'lab04' ? 'active' : '' %>">Lab 04</a></li>
+        <li><a href="/lab05" class="<%= currentLab === 'lab05' ? 'active' : '' %>">Lab 05</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="main-wrapper">

@@ -1,0 +1,70 @@
+<%- include('partials/header', { title: 'Lab 03 - DOM XSS in document.write sink', currentLab: 'lab03' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 03</span>
+    <span>DOM-based XSS</span>
+  </div>
+  <h1 class="lab-title">DOM XSS in document.write sink using source location.search</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada fungsi pelacak analitik pencarian.
+    Skrip sisi klien membaca parameter query dari <code>location.search</code> dan menulis elemen gambar pelacak
+    langsung ke halaman menggunakan <code>document.write</code> tanpa sanitasi.
+  </p>
+</div>
+
+<div class="card">
+  <form action="/lab03" method="GET" class="search-form">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search blog posts..." 
+      value="<%= search !== null ? search : '' %>"
+      class="form-input"
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (search !== null) { %>
+    <div class="search-results-banner">
+      <!-- Output dari server di-encode dengan aman menggunakan <%= %> -->
+      <h3>Results for: <%= search %></h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Found <%= results.length %> post(s) matching your query.
+      </p>
+    </div>
+
+    <!-- Client-side analytics tracker script (VULNERABLE DOM SINK: document.write) -->
+    <div id="trackerContainer" style="margin-top: 1rem;">
+      <script>
+        function trackSearch(query) {
+          // VULNERABLE: Menulis langsung ke DOM tanpa sanitasi dari query parameter
+          document.write('<img src="/images/tracker.gif?searchTerms=' + query + '">');
+        }
+        var query = (new URLSearchParams(window.location.search)).get('search');
+        if (query) {
+          trackSearch(query);
+        }
+      </script>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+      <% if (results.length > 0) { %>
+        <% results.forEach(post => { %>
+          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div style="margin-top: 1.5rem;">
+      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,55 @@
+<%- include('partials/header', { title: 'Lab 01 - Reflected XSS into HTML context', currentLab: 'lab01' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 01</span>
+    <span>Reflected XSS</span>
+  </div>
+  <h1 class="lab-title">Reflected XSS into HTML context with nothing encoded</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan reflected Cross-Site Scripting sederhana pada fungsi pencarian blog.
+    Input dari parameter query dipantulkan langsung ke dalam konteks HTML tanpa encoding.
+  </p>
+</div>
+
+<div class="card">
+  <form action="/lab01" method="GET" class="search-form">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Search blog posts..." 
+      value="<%= search !== null ? search : '' %>"
+      class="form-input"
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (search !== null) { %>
+    <div class="search-results-banner">
+      <!-- VULNERABILITY INTENDED FOR CTF: unencoded reflection into HTML context -->
+      <h3>Results for: <%- search %></h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Found <%= results.length %> post(s) matching your query.
+      </p>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+      <% if (results.length > 0) { %>
+        <% results.forEach(post => { %>
+          <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #fafafa;">
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);"><%= post.title %></h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><%= post.content %></p>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">No matching articles found in blog archives.</p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div style="margin-top: 1.5rem;">
+      <p style="color: var(--text-muted);">Gunakan kolom di atas untuk mencari artikel blog.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>
