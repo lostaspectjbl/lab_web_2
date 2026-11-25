@@ -1,0 +1,294 @@
+<!-- ═══════════════════════════════════════════════════════════════════
+     Lab Solved Notification — ByteNote XSS Lab Series
+     Intercepts window.alert() to detect successful XSS execution,
+     then reads the flag cookie and shows the solved banner.
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="lab-solved-overlay" aria-hidden="true">
+  <div id="lab-solved-panel">
+    <div id="lab-solved-header">
+      <div id="lab-solved-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div>
+        <div id="lab-solved-title">Lab Solved!</div>
+        <div id="lab-solved-subtitle">XSS vulnerability successfully exploited</div>
+      </div>
+    </div>
+
+    <div id="lab-solved-body">
+      <div id="lab-solved-flag-label">Your Flag</div>
+      <div id="lab-solved-flag-box">
+        <code id="lab-solved-flag-text">Solving...</code>
+        <button id="lab-solved-copy-btn" title="Copy to clipboard">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+        </button>
+      </div>
+      <div id="lab-solved-copy-confirm" style="display:none;">Copied to clipboard!</div>
+    </div>
+
+    <div id="lab-solved-footer">
+      <button id="lab-solved-dismiss">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ── Lab Solved Overlay ───────────────────────────────────────────── */
+  #lab-solved-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+  }
+  #lab-solved-overlay.visible {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  #lab-solved-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.12);
+    max-width: 480px;
+    width: 100%;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(40px) scale(0.95); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  #lab-solved-header {
+    background: linear-gradient(135deg, #15803d 0%, #16a34a 50%, #22c55e 100%);
+    padding: 1.75rem 1.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #fff;
+  }
+
+  #lab-solved-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.35);
+  }
+
+  #lab-solved-title {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 0.2rem;
+  }
+
+  #lab-solved-subtitle {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+
+  #lab-solved-body {
+    padding: 1.5rem 1.75rem;
+  }
+
+  #lab-solved-flag-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+  }
+
+  #lab-solved-flag-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  #lab-solved-flag-text {
+    flex: 1;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.875rem;
+    color: #15803d;
+    font-weight: 600;
+    word-break: break-all;
+  }
+
+  #lab-solved-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #15803d;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  #lab-solved-copy-btn:hover { background: #166534; }
+  #lab-solved-copy-btn.copied { background: #166534; }
+
+  #lab-solved-copy-confirm {
+    font-size: 0.75rem;
+    color: #15803d;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    padding-left: 0.1rem;
+  }
+
+  #lab-solved-footer {
+    padding: 0 1.75rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #lab-solved-dismiss {
+    background: #f9fafb;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    transition: background 0.15s;
+  }
+  #lab-solved-dismiss:hover { background: #f3f4f6; }
+</style>
+
+<script>
+(function () {
+  /* ── Read the flag from the lab's cookie ───────────────────────────── */
+  function getFlag() {
+    var pairs = document.cookie.split(';');
+    for (var i = 0; i < pairs.length; i++) {
+      var pair = pairs[i].trim();
+      if (pair.indexOf('flag=') === 0) {
+        return decodeURIComponent(pair.slice(5));
+      }
+    }
+    return null;
+  }
+
+  /* ── Show the solved notification ──────────────────────────────────── */
+  function showSolved() {
+    var overlay = document.getElementById('lab-solved-overlay');
+    var flagText = document.getElementById('lab-solved-flag-text');
+    if (!overlay) return;
+    if (overlay.classList.contains('visible')) return; // already showing
+
+    var flag = getFlag();
+    if (flag) {
+      flagText.textContent = flag;
+    } else {
+      flagText.textContent = '(flag cookie not found — check cookie path)';
+    }
+
+    overlay.classList.add('visible');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    // ── Copy button ──
+    var copyBtn = document.getElementById('lab-solved-copy-btn');
+    var copyConfirm = document.getElementById('lab-solved-copy-confirm');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        var text = flagText.textContent;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            copyConfirm.style.display = 'block';
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+          });
+        } else {
+          // Fallback for older browsers
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.top = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          copyConfirm.style.display = 'block';
+          copyBtn.textContent = 'Copied!';
+        }
+      });
+    }
+
+    // ── Dismiss button ──
+    var dismissBtn = document.getElementById('lab-solved-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function () {
+        overlay.classList.remove('visible');
+        overlay.setAttribute('aria-hidden', 'true');
+      });
+    }
+
+    // ── Close on overlay click (outside the panel) ──
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) {
+        overlay.classList.remove('visible');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  /* ── Intercept window.alert to detect XSS execution ───────────────── */
+  var _nativeAlert = window.alert;
+  window.alert = function (msg) {
+    // Show the native dialog first
+    _nativeAlert.call(window, msg);
+    // Then show our solved notification
+    showSolved();
+  };
+
+  /* ── Also intercept window.confirm and window.prompt ──────────────── */
+  var _nativeConfirm = window.confirm;
+  window.confirm = function (msg) {
+    var result = _nativeConfirm.call(window, msg);
+    showSolved();
+    return result;
+  };
+
+  /* ── Expose manually for payloads that call showSolved() directly ─── */
+  window.showLabSolved = showSolved;
+})();
+</script>
