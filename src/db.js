@@ -32,6 +32,12 @@ function initSchema() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS helpers (
+      team_id TEXT PRIMARY KEY,
+      html_content TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }
 
@@ -56,6 +62,20 @@ function seedData() {
       'Bob Researcher'
     );
 
+    insertPost.run(
+      3,
+      'Client-side Routing and URL Hash Events',
+      'Modern single-page applications often listen for the hashchange event to navigate between different views or scroll smoothly to sections without requiring a full page refresh.',
+      'Eve Navigator'
+    );
+
+    insertPost.run(
+      4,
+      'Securing Legacy Libraries and Selectors',
+      'Older JavaScript libraries like jQuery 1.8.x had selector parsing behaviors that could unintentionally evaluate HTML strings when unvalidated inputs were passed to the selector engine.',
+      'Dan Developer'
+    );
+
     const insertComment = db.prepare(
       'INSERT INTO comments (post_id, author, website, content) VALUES (?, ?, ?, ?)'
     );
@@ -77,6 +97,7 @@ function seedData() {
 
 function resetDatabase() {
   db.exec(`
+    DROP TABLE IF EXISTS helpers;
     DROP TABLE IF EXISTS comments;
     DROP TABLE IF EXISTS posts;
   `);

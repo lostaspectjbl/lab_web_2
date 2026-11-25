@@ -9,8 +9,11 @@ services:
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"
+      - "${HELPER_PORT:-3001}:3001"
     environment:
       - PORT=3000
+      - HELPER_PORT=3001
+      - HELPER_HOST=${HELPER_HOST:-http://localhost:3001}
       - NODE_ENV=production
       - DATA_DIR=/data
       - FLAG_LAB01=${FLAG_LAB01:-UbigCTF{r3fl3ct3d_xss_b4s1c_h7ml_c0nt3xt}}

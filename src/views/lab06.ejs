@@ -1,0 +1,50 @@
+<%- include('partials/header', { title: 'Lab 06 - DOM XSS in jQuery selector sink', currentLab: 'lab06' }) %>
+
+<div class="lab-banner">
+  <div class="lab-meta">
+    <span class="lab-pill">Lab 06</span>
+    <span>DOM-based XSS (hashchange)</span>
+  </div>
+  <h1 class="lab-title">DOM XSS in jQuery selector sink using a hashchange event</h1>
+  <p class="lab-description">
+    Lab ini berisi kerentanan DOM-based Cross-Site Scripting pada halaman blog. Skrip memanfaatkan pustaka jQuery 1.8.x
+    untuk mendeteksi event <code>hashchange</code> dan mencari judul artikel menggunakan selector <code>:contains(...)</code>
+    dari nilai <code>location.hash</code> tanpa sanitasi.
+  </p>
+  <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.85rem; color: #93c5fd;">
+    💡 <em>Petunjuk eksploitasi:</em> Gunakan <a href="<%= helperUrl %>" target="_blank" style="color: #ffffff; text-decoration: underline; font-weight: 600;">Challenge Helper Page</a> (origin terpisah) untuk membuat dokumen HTML pemicu yang menyematkan iframe ke lab ini.
+  </div>
+</div>
+
+<section class="blog-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+  <% posts.forEach(post => { %>
+    <article class="card" style="margin-bottom: 0;" id="post-<%= post.id %>">
+      <header class="post-header" style="margin-bottom: 0.75rem; padding-bottom: 0.5rem;">
+        <h2 class="post-title" style="font-size: 1.45rem;"><%= post.title %></h2>
+        <div class="post-meta">
+          By <strong><%= post.author %></strong> &bull; <%= post.created_at %>
+        </div>
+      </header>
+      <div class="post-content" style="margin-bottom: 0; font-size: 0.95rem;">
+        <p><%= post.content %></p>
+      </div>
+    </article>
+  <% }); %>
+</section>
+
+<!-- Local jQuery 1.8.x library -->
+<script src="/js/vendor/jquery-1.8.3.min.js"></script>
+<script>
+  // VULNERABLE SINK: jQuery $() selector parsing with location.hash on hashchange
+  $(window).on('hashchange', function() {
+    var query = decodeURIComponent(window.location.hash.slice(1));
+    if (query) {
+      var post = $('section.blog-list h2:contains(' + query + ')');
+      if (post && post.length > 0) {
+        post.get(0).scrollIntoView();
+      }
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

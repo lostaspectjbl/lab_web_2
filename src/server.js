@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const { resetDatabase } = require('./db');
 
+// Main Application (Lab Web Platform)
 const app = express();
 
 // View engine setup (EJS)
@@ -30,6 +31,8 @@ const lab02Routes = require('./routes/lab02');
 const lab03Routes = require('./routes/lab03');
 const lab04Routes = require('./routes/lab04');
 const lab05Routes = require('./routes/lab05');
+const lab06Routes = require('./routes/lab06');
+const helperRoutes = require('./routes/helper');
 
 app.use('/', indexRoutes);
 app.use('/lab01', lab01Routes);
@@ -37,6 +40,8 @@ app.use('/lab02', lab02Routes);
 app.use('/lab03', lab03Routes);
 app.use('/lab04', lab04Routes);
 app.use('/lab05', lab05Routes);
+app.use('/lab06', lab06Routes);
+app.use('/helper', helperRoutes);
 
 // Lightweight tracking endpoint for Lab 03 (transparent 1x1 GIF)
 const TRANSPARENT_GIF = Buffer.from(
@@ -64,7 +69,24 @@ app.post('/reset', (req, res) => {
   }
 });
 
-// 404 handler
+// -------------------------------------------------------------
+// Separate Origin: Challenge Helper Application (Port 3001)
+// -------------------------------------------------------------
+const helperApp = express();
+helperApp.set('views', path.join(__dirname, 'views'));
+helperApp.set('view engine', 'ejs');
+helperApp.use(express.urlencoded({ extended: false }));
+helperApp.use(express.json());
+helperApp.use(express.static(path.join(__dirname, '../public')));
+helperApp.disable('x-powered-by');
+
+// Root redirect to /helper on the helper origin
+helperApp.get('/', (req, res) => {
+  res.redirect('/helper');
+});
+helperApp.use('/helper', helperRoutes);
+
+// 404 handler for main app
 app.use((req, res) => {
   res.status(404).send('Page Not Found');
 });
@@ -75,12 +97,17 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-// Start server if run directly
+// Start servers if run directly
 if (require.main === module) {
+  // 1. Start main lab server
   app.listen(config.port, '0.0.0.0', () => {
     console.log(`[+] XSS Lab Series server is running on http://0.0.0.0:${config.port}`);
-    console.log(`[+] Environment: ${config.nodeEnv}`);
+  });
+
+  // 2. Start challenge helper server on separate origin
+  helperApp.listen(config.helperPort, '0.0.0.0', () => {
+    console.log(`[+] Challenge Helper server running on http://0.0.0.0:${config.helperPort} (Separate Origin)`);
   });
 }
 
-module.exports = app;
+module.exports = { app, helperApp };

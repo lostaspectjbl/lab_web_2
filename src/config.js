@@ -2,6 +2,8 @@ require('dotenv').config();
 
 module.exports = {
   port: parseInt(process.env.PORT, 10) || 3000,
+  helperPort: parseInt(process.env.HELPER_PORT, 10) || 3001,
+  helperHost: process.env.HELPER_HOST || 'http://localhost:3001',
   nodeEnv: process.env.NODE_ENV || 'development',
   flags: {
     lab01: process.env.FLAG_LAB01 || 'UbigCTF{lab01_default_flag_please_set_in_env}',
