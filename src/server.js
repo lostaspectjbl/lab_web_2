@@ -1,44 +1,58 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const crypto = require('crypto');
 const config = require('./config');
-const { resetDatabase } = require('./db');
+const { resetDatabase, resetSession } = require('./db');
 
-// Main Application (Lab Web Platform)
+// ── Main Application ──────────────────────────────────────────────────────────
 const app = express();
 
-// View engine setup (EJS)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Security headers: Disable X-Powered-By, avoid MIME sniffing
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   next();
 });
 
-// Routes
-const indexRoutes = require('./routes/index');
-const lab01Routes = require('./routes/lab01');
-const lab02Routes = require('./routes/lab02');
-const lab03Routes = require('./routes/lab03');
-const lab04Routes = require('./routes/lab04');
-const lab05Routes = require('./routes/lab05');
-const lab06Routes = require('./routes/lab06');
-const lab07Routes = require('./routes/lab07');
-const lab08Routes = require('./routes/lab08');
-const lab09Routes = require('./routes/lab09');
-const lab10Routes = require('./routes/lab10');
+// ── Per-user session ──────────────────────────────────────────────────────────
+// Each browser gets its own isolated session so stored-XSS comments in
+// lab02 and lab08 are not shared between participants.
+app.use(session({
+  name: 'bytenote_sid',
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+  resave: false,
+  saveUninitialized: true,   // give every visitor a session ID immediately
+  cookie: {
+    httpOnly: false,          // must stay false so flag cookie is readable by JS
+    sameSite: 'lax',
+    maxAge: 4 * 60 * 60 * 1000  // 4 hours
+  }
+}));
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+const indexRoutes  = require('./routes/index');
+const lab01Routes  = require('./routes/lab01');
+const lab02Routes  = require('./routes/lab02');
+const lab03Routes  = require('./routes/lab03');
+const lab04Routes  = require('./routes/lab04');
+const lab05Routes  = require('./routes/lab05');
+const lab06Routes  = require('./routes/lab06');
+const lab07Routes  = require('./routes/lab07');
+const lab08Routes  = require('./routes/lab08');
+const lab09Routes  = require('./routes/lab09');
+const lab10Routes  = require('./routes/lab10');
 const helperRoutes = require('./routes/helper');
 
-// All public blog routes (homepage, /articles, /shop, /about, /contact, /search) are in indexRoutes
+// All public blog routes (/, /articles, /shop, /about, /contact, /search)
 app.use('/', indexRoutes);
 app.use('/lab01', lab01Routes);
 app.use('/lab02', lab02Routes);
@@ -52,7 +66,7 @@ app.use('/lab09', lab09Routes);
 app.use('/lab10', lab10Routes);
 app.use('/helper', helperRoutes);
 
-// Lightweight tracking endpoint for Lab 03 (transparent 1x1 GIF)
+// Transparent 1x1 GIF for Lab 03 tracker
 const TRANSPARENT_GIF = Buffer.from(
   'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
   'base64'
@@ -63,12 +77,12 @@ app.get(['/images/tracker.gif', '/track'], (req, res) => {
   res.send(TRANSPARENT_GIF);
 });
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Database reset endpoint (can be called by cron or admin)
+// Global database reset (admin/cron use)
 app.post('/reset', (req, res) => {
   try {
     resetDatabase();
@@ -78,24 +92,17 @@ app.post('/reset', (req, res) => {
   }
 });
 
-// -------------------------------------------------------------
-// Separate Origin: Challenge Helper Application (Port 3001)
-// -------------------------------------------------------------
-const helperApp = express();
-helperApp.set('views', path.join(__dirname, 'views'));
-helperApp.set('view engine', 'ejs');
-helperApp.use(express.urlencoded({ extended: false }));
-helperApp.use(express.json());
-helperApp.use(express.static(path.join(__dirname, '../public')));
-helperApp.disable('x-powered-by');
-
-// Root redirect to /helper on the helper origin
-helperApp.get('/', (req, res) => {
-  res.redirect('/helper');
+// Per-session reset — clears only the current user's stored comments
+app.post('/reset/session', (req, res) => {
+  try {
+    resetSession(req.session.id);
+    res.json({ success: true, message: 'Your session data has been reset.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reset session', details: err.message });
+  }
 });
-helperApp.use('/helper', helperRoutes);
 
-// 404 handler for main app
+// 404 handler
 app.use((req, res) => {
   res.status(404).send('Page Not Found');
 });
@@ -106,14 +113,23 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-// Start servers if run directly
+// ── Separate Origin: Challenge Helper (Port 3001) ─────────────────────────────
+const helperApp = express();
+helperApp.set('views', path.join(__dirname, 'views'));
+helperApp.set('view engine', 'ejs');
+helperApp.use(express.urlencoded({ extended: false }));
+helperApp.use(express.json());
+helperApp.use(express.static(path.join(__dirname, '../public')));
+helperApp.disable('x-powered-by');
+
+helperApp.get('/', (req, res) => { res.redirect('/helper'); });
+helperApp.use('/helper', helperRoutes);
+
+// ── Start servers ─────────────────────────────────────────────────────────────
 if (require.main === module) {
-  // 1. Start main lab server
   app.listen(config.port, '0.0.0.0', () => {
     console.log(`[+] XSS Lab Series server is running on http://0.0.0.0:${config.port}`);
   });
-
-  // 2. Start challenge helper server on separate origin
   helperApp.listen(config.helperPort, '0.0.0.0', () => {
     console.log(`[+] Challenge Helper server running on http://0.0.0.0:${config.helperPort} (Separate Origin)`);
   });
