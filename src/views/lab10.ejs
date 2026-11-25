@@ -25,9 +25,28 @@
           <% }); %>
         </table>
       </div>
+
+      <!-- Related products -->
+      <div style="margin-top:2rem;">
+        <div class="product-specs-title">Also in the Shop</div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">
+          <a href="/lab10?product=usb-armory" style="font-size:0.85rem;color:var(--color-text);text-decoration:none;padding:0.65rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
+            <span style="width:8px;height:8px;background:var(--color-accent);border-radius:50%;flex-shrink:0;"></span>USB Armory Mk II
+          </a>
+          <a href="/lab10?product=lan-turtle" style="font-size:0.85rem;color:var(--color-text);text-decoration:none;padding:0.65rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
+            <span style="width:8px;height:8px;background:var(--color-accent);border-radius:50%;flex-shrink:0;"></span>Hak5 LAN Turtle
+          </a>
+          <a href="/lab10?product=rubber-ducky" style="font-size:0.85rem;color:var(--color-text);text-decoration:none;padding:0.65rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
+            <span style="width:8px;height:8px;background:var(--color-accent);border-radius:50%;flex-shrink:0;"></span>USB Rubber Ducky
+          </a>
+          <a href="/lab10?product=wifi-pineapple" style="font-size:0.85rem;color:var(--color-text);text-decoration:none;padding:0.65rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);display:flex;align-items:center;gap:0.5rem;">
+            <span style="width:8px;height:8px;background:var(--color-accent);border-radius:50%;flex-shrink:0;"></span>WiFi Pineapple Mark VII
+          </a>
+        </div>
+      </div>
     </div>
 
-    <!-- Product info panel -->
+    <!-- Product info -->
     <div class="product-info">
       <div class="product-category"><%= product.category %></div>
       <h1 class="product-name"><%= product.name %></h1>
@@ -38,7 +57,7 @@
       <div class="product-price"><%= product.price %></div>
       <p class="product-desc"><%= product.description %></p>
 
-      <!-- Stock availability checker -->
+      <!-- Store stock checker — intentional DOM XSS sink (document.write in select) -->
       <div class="product-stock-panel">
         <div class="product-stock-title">Check Store Availability</div>
         <form action="/lab10" method="get" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
@@ -48,13 +67,14 @@
             <select name="storeId" id="storeId" style="width:100%;">
               <option value="">Choose a location...</option>
               <% availableStores.forEach(function(s) { %>
-              <option value="<%= s.id %>"><%= s.name %></option>
+              <option value="<%= s.id %>" <%= (typeof storeId !== 'undefined' && storeId === s.id) ? 'selected' : '' %>><%= s.name %></option>
               <% }); %>
             </select>
           </div>
           <button type="submit" class="btn btn-secondary btn-sm">Check Stock</button>
         </form>
 
+        <!-- Injected option via document.write — intentional XSS sink -->
         <div style="margin-top:1rem;">
           <div id="stock-result">
             <select name="storeId" style="display:none;">
@@ -70,9 +90,9 @@
           <% if (typeof storeId !== 'undefined' && storeId && typeof storeStock !== 'undefined' && storeStock !== null) { %>
           <div class="alert <%= storeStock > 0 ? 'alert-success' : 'alert-warning' %>" style="margin-top:0.75rem;">
             <% if (storeStock > 0) { %>
-              In stock at selected location (<%= storeStock %> units available).
+              <strong>In stock</strong> at selected location &mdash; <%= storeStock %> units available.
             <% } else { %>
-              Out of stock at selected location. Check another store or order online.
+              <strong>Out of stock</strong> at selected location. Check another store or order online.
             <% } %>
           </div>
           <% } %>
@@ -82,6 +102,13 @@
       <div class="product-actions">
         <button class="btn btn-primary btn-lg" type="button">Add to Cart</button>
         <button class="btn btn-secondary" type="button">Save for Later</button>
+      </div>
+
+      <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--color-border);">
+        <div style="font-size:0.75rem;color:var(--color-text-muted);line-height:1.6;">
+          Free shipping on orders over Rp 2,500,000. Ships within 3&ndash;5 business days.
+          <br>All products come with a 30-day return policy.
+        </div>
       </div>
     </div>
   </div>

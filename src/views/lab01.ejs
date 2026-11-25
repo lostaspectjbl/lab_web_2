@@ -3,21 +3,28 @@
 <div class="page-wrap wide">
   <div class="layout-cols">
     <main>
+      <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Search</span>
+      </div>
+
       <div class="page-header">
         <div class="page-header-eyebrow">Search</div>
         <h1>Search Articles</h1>
+        <p>Find articles by topic, author, or keyword across the entire ByteNote archive.</p>
       </div>
 
       <div class="search-hero">
-        <div class="search-label">What are you looking for?</div>
         <form class="search-hero-form" action="/lab01" method="get" autocomplete="off">
-          <input type="text" name="search" placeholder="Search articles, topics, authors..." value="">
+          <input type="text" name="search" placeholder="Search articles, topics, authors..."
+                 value="<%= (typeof search !== 'undefined' && search !== null) ? search : '' %>">
           <button type="submit">Search</button>
         </form>
       </div>
 
       <% if (typeof search !== 'undefined' && search !== null && search !== '') { %>
-        <div id="search-results-header" class="search-results-header">
+        <div class="search-results-header">
           Showing results for: <%- search %>
         </div>
 
@@ -25,7 +32,7 @@
           <% if (posts && posts.length > 0) { %>
             <% posts.forEach(function(post) { %>
             <div class="blog-list-item">
-              <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+              <div class="blog-list-category"><%= post.category %></div>
               <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
               <div class="blog-list-excerpt"><%= post.excerpt %></div>
               <div class="blog-list-meta">
@@ -39,12 +46,29 @@
             <div class="search-no-results">No articles found matching your query. Try a different search term.</div>
           <% } %>
         </div>
+      <% } else { %>
+        <div class="blog-list">
+          <% if (recent && recent.length > 0) { %>
+            <% recent.forEach(function(post) { %>
+            <div class="blog-list-item">
+              <div class="blog-list-category"><%= post.category %></div>
+              <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
+              <div class="blog-list-excerpt"><%= post.excerpt %></div>
+              <div class="blog-list-meta">
+                <span><%= post.author %></span>
+                <span>&middot;</span>
+                <span><%= post.read_time %> min read</span>
+              </div>
+            </div>
+            <% }); %>
+          <% } %>
+        </div>
       <% } %>
     </main>
 
     <aside class="sidebar">
       <div class="sidebar-widget">
-        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-widget-title">Browse Topics</div>
         <div class="sidebar-tags">
           <a href="/lab01?search=xss" class="tag">XSS</a>
           <a href="/lab01?search=csp" class="tag">CSP</a>
@@ -52,13 +76,14 @@
           <a href="/lab01?search=jquery" class="tag">jQuery</a>
           <a href="/lab01?search=encoding" class="tag">Output Encoding</a>
           <a href="/lab01?search=penetration" class="tag">Pen Testing</a>
+          <a href="/lab01?search=injection" class="tag">Injection</a>
         </div>
       </div>
       <div class="sidebar-widget">
         <div class="sidebar-widget-title">Recent Articles</div>
         <ul class="sidebar-article-list">
           <% if (recent && recent.length > 0) { %>
-            <% recent.forEach(function(p) { %>
+            <% recent.slice(0,4).forEach(function(p) { %>
             <li class="sidebar-article-item">
               <a href="/articles/<%= p.id %>"><%= p.title %></a>
               <div class="sidebar-article-item-meta"><%= p.author %> &middot; <%= p.read_time %> min</div>
@@ -66,6 +91,14 @@
             <% }); %>
           <% } %>
         </ul>
+      </div>
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Newsletter</div>
+        <p class="newsletter-desc">Get new articles in your inbox every week.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="your@email.com">
+          <button type="button">Subscribe</button>
+        </div>
       </div>
     </aside>
   </div>

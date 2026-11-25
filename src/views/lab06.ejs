@@ -3,17 +3,23 @@
 <div class="page-wrap wide">
   <div class="layout-cols">
     <main>
+      <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Articles</span>
+      </div>
+
       <div class="page-header">
-        <div class="page-header-eyebrow">All Articles</div>
-        <h1>Cybersecurity &amp; Web Technology</h1>
-        <p>Browse our full archive of research, tutorials, and analysis. Use the browser's URL hash to jump to a specific article by title.</p>
+        <div class="page-header-eyebrow">Archive</div>
+        <h1>All Articles</h1>
+        <p>Browse our complete archive. Use the topic links in the sidebar or the URL hash to jump to a specific article.</p>
       </div>
 
       <div class="blog-list">
         <% posts.forEach(function(post) { %>
         <section class="blog-list">
           <div class="blog-list-item">
-            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+            <div class="blog-list-category"><%= post.category %></div>
             <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
             <div class="blog-list-excerpt"><%= post.excerpt %></div>
             <div class="blog-list-meta">
@@ -33,13 +39,17 @@
     <aside class="sidebar">
       <div class="sidebar-widget">
         <div class="sidebar-widget-title">Jump to Article</div>
-        <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:0.75rem;">Append <code style="font-size:0.75rem;background:var(--color-code-bg);padding:0.1em 0.3em;border-radius:3px;">#Article Title</code> to the URL to scroll to a specific article.</p>
-        <div class="sidebar-tags">
+        <p style="font-size:0.78rem;color:var(--color-text-secondary);margin-bottom:0.75rem;line-height:1.5;">Click a title below to scroll directly to that article on this page.</p>
+        <ul class="sidebar-article-list">
           <% posts.forEach(function(post) { %>
-          <a href="#<%= encodeURIComponent(post.title) %>" class="tag" style="font-size:0.68rem;"><%= post.title.substring(0, 30) %>...</a>
+          <li class="sidebar-article-item">
+            <a href="#<%= encodeURIComponent(post.title) %>"><%= post.title %></a>
+            <div class="sidebar-article-item-meta"><%= post.author %> &middot; <%= post.read_time %> min</div>
+          </li>
           <% }); %>
-        </div>
+        </ul>
       </div>
+
       <div class="sidebar-widget">
         <div class="sidebar-widget-title">Topics</div>
         <div class="sidebar-tags">
@@ -48,6 +58,16 @@
           <a href="/articles" class="tag">DOM Security</a>
           <a href="/articles" class="tag">jQuery</a>
           <a href="/articles" class="tag">Penetration Testing</a>
+          <a href="/articles" class="tag">Output Encoding</a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Newsletter</div>
+        <p class="newsletter-desc">Get new articles in your inbox every week.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="your@email.com">
+          <button type="button">Subscribe</button>
         </div>
       </div>
     </aside>
@@ -56,7 +76,7 @@
 
 <script src="/js/vendor/jquery-1.8.3.min.js"></script>
 <script>
-  // Auto-scroll to article matching the URL hash on hashchange
+  // Auto-scroll to article matching the URL hash on hashchange — intentional jQuery selector XSS sink
   $(window).on('hashchange', function() {
     var hash = decodeURIComponent(location.hash.slice(1));
     if (!hash) return;
@@ -65,7 +85,6 @@
       $('html, body').animate({ scrollTop: target.offset().top - 80 }, 400);
     }
   });
-  // Trigger on initial load too
   if (location.hash) $(window).trigger('hashchange');
 </script>
 

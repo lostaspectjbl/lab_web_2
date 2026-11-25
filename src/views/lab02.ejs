@@ -1,83 +1,125 @@
 <%- include('partials/header', { title: post.title + ' — ByteNote', currentPage: 'articles' }) %>
 
-<div class="page-wrap">
-  <div class="breadcrumb">
-    <a href="/">Home</a>
-    <span class="breadcrumb-sep">/</span>
-    <a href="/articles">Articles</a>
-    <span class="breadcrumb-sep">/</span>
-    <span><%= post.title %></span>
-  </div>
+<div class="page-wrap wide">
+  <div class="layout-cols">
+    <main>
+      <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/articles">Articles</a>
+        <span class="breadcrumb-sep">/</span>
+        <span><%= post.title %></span>
+      </div>
 
-  <article>
-    <div class="article-header">
-      <a href="/articles" class="article-category-tag"><%= post.category %></a>
-      <h1 class="article-title"><%= post.title %></h1>
-      <div class="article-meta-row">
-        <div class="article-author-info">
-          <span class="author-avatar avatar-<%= post.author_key || 'a' %>" style="font-size:0.75rem;width:30px;height:30px;">
+      <article>
+        <div class="article-header">
+          <a href="/articles" class="article-category-tag"><%= post.category %></a>
+          <h1 class="article-title"><%= post.title %></h1>
+          <div class="article-meta-row">
+            <div class="article-author-info">
+              <span class="author-avatar avatar-<%= post.author_key || 'b' %>" style="font-size:0.75rem;width:30px;height:30px;">
+                <%= post.author.charAt(0) %>
+              </span>
+              <span class="article-author-name"><%= post.author %></span>
+            </div>
+            <span><%= post.read_time %> min read</span>
+            <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+          </div>
+        </div>
+
+        <div class="article-body">
+          <%- post.content %>
+        </div>
+
+        <div class="tag-list" style="margin-top:2rem;">
+          <a href="/articles" class="tag">Web Security</a>
+          <a href="/articles" class="tag"><%= post.category %></a>
+          <a href="/articles" class="tag">XSS</a>
+        </div>
+      </article>
+
+      <hr class="divider">
+
+      <!-- Comments Section — Stored XSS sink: content rendered with <%- %> (unescaped) -->
+      <div class="comments-section">
+        <h2 class="comments-title"><%= comments.length %> Comment<%= comments.length !== 1 ? 's' : '' %></h2>
+
+        <% if (comments.length > 0) { %>
+        <ul class="comment-list">
+          <% comments.forEach(function(c, i) {
+               const avColors = ['avatar-a','avatar-b','avatar-c','avatar-d','avatar-e'];
+               const avClass = avColors[i % avColors.length];
+               const initials = c.author.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          %>
+          <li class="comment-item">
+            <div class="comment-avatar <%= avClass %>"><%= initials %></div>
+            <div class="comment-body">
+              <div class="comment-header">
+                <span class="comment-author"><%= c.author %></span>
+                <span class="comment-date"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+              </div>
+              <div class="comment-text"><%- c.content %></div>
+            </div>
+          </li>
+          <% }); %>
+        </ul>
+        <% } else { %>
+        <p class="text-muted mb-3">No comments yet. Be the first to leave a comment.</p>
+        <% } %>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+          <div class="alert alert-success"><%= message %></div>
+        <% } %>
+
+        <div class="comment-form-title">Leave a Comment</div>
+        <form action="/lab02/comment" method="POST" style="max-width:560px;">
+          <div class="form-group">
+            <label for="author">Name</label>
+            <input type="text" id="author" name="author" placeholder="Your name" required maxlength="80">
+          </div>
+          <div class="form-group">
+            <label for="content">Comment</label>
+            <textarea id="content" name="content" placeholder="Share your thoughts on this article..." required maxlength="2000"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Post Comment</button>
+        </form>
+      </div>
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">About the Author</div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+          <span class="author-avatar avatar-<%= post.author_key || 'b' %>" style="width:44px;height:44px;font-size:1rem;flex-shrink:0;">
             <%= post.author.charAt(0) %>
           </span>
-          <span class="article-author-name"><%= post.author %></span>
-        </div>
-        <span><%= post.read_time %> min read</span>
-        <span><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
-      </div>
-    </div>
-
-    <div class="article-body">
-      <%- post.content %>
-    </div>
-
-    <div class="tag-list" style="margin-top:2rem;">
-      <a href="/articles" class="tag">Web Security</a>
-      <a href="/articles" class="tag"><%= post.category %></a>
-    </div>
-  </article>
-
-  <hr class="divider">
-
-  <!-- Comments Section (vulnerable: stored XSS) -->
-  <div class="comments-section">
-    <h2 class="comments-title"><%= comments.length %> Comment<%= comments.length !== 1 ? 's' : '' %></h2>
-
-    <% if (comments.length > 0) { %>
-    <ul class="comment-list">
-      <% comments.forEach(function(c, i) {
-           const avatarColors = ['avatar-a','avatar-b','avatar-c','avatar-d','avatar-e'];
-           const avClass = avatarColors[i % avatarColors.length];
-           const initials = c.author.split(' ').map(w=>w[0]).join('').slice(0,2);
-      %>
-      <li class="comment-item">
-        <div class="comment-avatar <%= avClass %>"><%= initials %></div>
-        <div class="comment-body">
-          <div class="comment-header">
-            <span class="comment-author"><%= c.author %></span>
-            <span class="comment-date"><%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;color:var(--color-text);"><%= post.author %></div>
+            <div style="font-size:0.75rem;color:var(--color-text-muted);">ByteNote Contributor</div>
           </div>
-          <div class="comment-text"><%- c.content %></div>
         </div>
-      </li>
-      <% }); %>
-    </ul>
-    <% } %>
-
-    <% if (typeof message !== 'undefined' && message) { %>
-      <div class="alert alert-success"><%= message %></div>
-    <% } %>
-
-    <div class="comment-form-title">Leave a Comment</div>
-    <form action="/lab02/comment" method="POST">
-      <div class="form-group">
-        <label for="author">Name</label>
-        <input type="text" id="author" name="author" placeholder="Your name" required maxlength="80">
+        <a href="/about#authors" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;">View Profile</a>
       </div>
-      <div class="form-group">
-        <label for="content">Comment</label>
-        <textarea id="content" name="content" placeholder="Share your thoughts..." required maxlength="2000"></textarea>
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">More Articles</div>
+        <ul class="sidebar-article-list">
+          <li class="sidebar-article-item"><a href="/articles/1">Understanding Output Encoding</a><div class="sidebar-article-item-meta">Alice Chen &middot; 7 min</div></li>
+          <li class="sidebar-article-item"><a href="/articles/3">DOM-Based XSS Explained</a><div class="sidebar-article-item-meta">Alice Chen &middot; 9 min</div></li>
+          <li class="sidebar-article-item"><a href="/articles/5">Content Security Policy Guide</a><div class="sidebar-article-item-meta">Sarah Kim &middot; 11 min</div></li>
+        </ul>
       </div>
-      <button type="submit" class="btn btn-primary">Post Comment</button>
-    </form>
+
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-tags">
+          <a href="/search?q=xss" class="tag">XSS</a>
+          <a href="/search?q=stored" class="tag">Stored XSS</a>
+          <a href="/search?q=web security" class="tag">Web Security</a>
+          <a href="/search?q=injection" class="tag">Injection</a>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>
 

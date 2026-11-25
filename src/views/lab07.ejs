@@ -3,14 +3,20 @@
 <div class="page-wrap wide">
   <div class="layout-cols">
     <main>
+      <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Search</span>
+      </div>
+
       <div class="page-header">
         <div class="page-header-eyebrow">Search</div>
         <h1>Search Articles</h1>
+        <p>Find articles by topic, author, or keyword across the entire ByteNote archive.</p>
       </div>
 
       <div class="search-hero">
-        <div class="search-label">What are you looking for?</div>
-        <!-- search input reflects into value attribute; angle brackets encoded, quotes not -->
+        <!-- search reflected into value attribute; angle brackets encoded, quotes NOT — intentional XSS sink -->
         <form class="search-hero-form" action="/lab07" method="get" autocomplete="off">
           <input type="text" name="search" placeholder="Search articles, topics, authors..." value="<%- search %>">
           <button type="submit">Search</button>
@@ -20,9 +26,12 @@
       <% if (typeof search !== 'undefined' && search !== '') { %>
       <div class="blog-list" style="margin-top:1.5rem;">
         <% if (posts && posts.length > 0) { %>
+          <div class="search-results-header" style="margin-bottom:1rem;">
+            Found <%= posts.length %> result<%= posts.length !== 1 ? 's' : '' %>
+          </div>
           <% posts.forEach(function(post) { %>
           <div class="blog-list-item">
-            <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:0.4rem;"><%= post.category %></div>
+            <div class="blog-list-category"><%= post.category %></div>
             <h2><a href="/articles/<%= post.id %>"><%= post.title %></a></h2>
             <div class="blog-list-excerpt"><%= post.excerpt %></div>
             <div class="blog-list-meta">
@@ -41,13 +50,22 @@
 
     <aside class="sidebar">
       <div class="sidebar-widget">
-        <div class="sidebar-widget-title">Topics</div>
+        <div class="sidebar-widget-title">Browse Topics</div>
         <div class="sidebar-tags">
           <a href="/lab07?search=xss" class="tag">XSS</a>
           <a href="/lab07?search=csp" class="tag">CSP</a>
           <a href="/lab07?search=dom" class="tag">DOM Security</a>
           <a href="/lab07?search=encoding" class="tag">Output Encoding</a>
+          <a href="/lab07?search=penetration" class="tag">Pen Testing</a>
         </div>
+      </div>
+      <div class="sidebar-widget">
+        <div class="sidebar-widget-title">Recent Articles</div>
+        <ul class="sidebar-article-list">
+          <li class="sidebar-article-item"><a href="/articles/1">Understanding Output Encoding</a><div class="sidebar-article-item-meta">Alice Chen &middot; 7 min</div></li>
+          <li class="sidebar-article-item"><a href="/articles/3">DOM-Based XSS Explained</a><div class="sidebar-article-item-meta">Alice Chen &middot; 9 min</div></li>
+          <li class="sidebar-article-item"><a href="/articles/5">Content Security Policy Guide</a><div class="sidebar-article-item-meta">Sarah Kim &middot; 11 min</div></li>
+        </ul>
       </div>
     </aside>
   </div>
