@@ -1,0 +1,121 @@
+<%#
+  labbar.ejs — Isolation status bar shown at the top of every lab page.
+  Variables expected from route:
+    labNum   : string  e.g. '01'
+    labTitle : string  e.g. 'Reflected XSS — HTML Context'
+    sessionId: string  req.session.id (shown abbreviated)
+    resetPath: string  e.g. '/lab01/reset' (POST) or null for DOM-only labs
+%>
+<div class="lab-bar">
+  <div class="lab-bar-inner">
+
+    <div class="lab-bar-left">
+      <span class="lab-bar-badge">Lab <%= labNum %></span>
+      <span class="lab-bar-title"><%= labTitle %></span>
+    </div>
+
+    <div class="lab-bar-right">
+      <div class="lab-bar-session" title="Your isolated session ID">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Session: <code><%= sessionId.slice(0, 8) %>...</code>
+      </div>
+
+      <% if (typeof resetPath !== 'undefined' && resetPath) { %>
+      <form class="lab-bar-reset-form" action="<%= resetPath %>" method="post">
+        <button type="submit" class="lab-bar-reset-btn" onclick="return confirm('Reset your lab state? This will clear your stored data for this lab.')">
+          Reset Lab
+        </button>
+      </form>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* ── Lab Isolation Bar ───────────────────────────────────────────────── */
+  .lab-bar {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .lab-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.55rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .lab-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .lab-bar-badge {
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .lab-bar-title {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .lab-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .lab-bar-session {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #64748b;
+    font-size: 0.75rem;
+  }
+  .lab-bar-session svg { color: #475569; flex-shrink: 0; }
+  .lab-bar-session code {
+    background: #0f172a;
+    color: #94a3b8;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    border: 1px solid #334155;
+  }
+  .lab-bar-reset-form { margin: 0; }
+  .lab-bar-reset-btn {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 0.28rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .lab-bar-reset-btn:hover {
+    background: #334155;
+    color: #e2e8f0;
+    border-color: #475569;
+  }
+  /* Push masthead down when labbar is present */
+  .has-labbar .masthead { position: static; }
+</style>

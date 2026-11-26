@@ -4,6 +4,8 @@ const { db } = require('../db');
 const config = require('../config');
 
 // Lab 03: DOM XSS via document.write — search page with analytics tracker
+const LAB_META = { num: '03', title: 'DOM XSS — document.write' };
+
 router.get('/', (req, res) => {
   res.cookie('flag', config.flags.lab03, {
     httpOnly: false,
@@ -25,7 +27,14 @@ router.get('/', (req, res) => {
     ).all();
   }
 
-  res.render('lab03', { search, posts });
+  res.render('lab03', {
+    search, posts,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab03/reset'
+  });
 });
+
+router.post('/reset', (req, res) => { res.redirect('/lab03'); });
 
 module.exports = router;

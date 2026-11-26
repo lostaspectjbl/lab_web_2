@@ -4,6 +4,8 @@ const { db } = require('../db');
 const config = require('../config');
 
 // Lab 04: DOM XSS via innerHTML — search page with dynamic results banner
+const LAB_META = { num: '04', title: 'DOM XSS — innerHTML' };
+
 router.get('/', (req, res) => {
   res.cookie('flag', config.flags.lab04, {
     httpOnly: false,
@@ -25,7 +27,14 @@ router.get('/', (req, res) => {
     ).all();
   }
 
-  res.render('lab04', { search, posts });
+  res.render('lab04', {
+    search, posts,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab04/reset'
+  });
 });
+
+router.post('/reset', (req, res) => { res.redirect('/lab04'); });
 
 module.exports = router;

@@ -7,6 +7,8 @@ const config = require('../config');
 // Comments are ISOLATED per session: each user sees only their own comments + seed comments.
 // Content is rendered with <%- %> (unescaped) — intentional XSS sink.
 
+const LAB_META = { num: '02', title: 'Stored XSS — Comment Section' };
+
 router.get('/', (req, res) => {
   res.cookie('flag', config.flags.lab02, {
     httpOnly: false,
@@ -26,7 +28,12 @@ router.get('/', (req, res) => {
      ORDER BY id ASC`
   ).all(2, req.session.id);
 
-  res.render('lab02', { post, comments });
+  res.render('lab02', {
+    post, comments,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab02/reset'
+  });
 });
 
 router.post('/comment', (req, res) => {

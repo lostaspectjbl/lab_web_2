@@ -5,6 +5,7 @@ const config = require('../config');
 
 // Lab 08: Stored XSS in href attribute — double quotes encoded, URL scheme NOT validated.
 // Comments are ISOLATED per session.
+const LAB_META = { num: '08', title: 'Stored XSS — Href Attribute (javascript: scheme)' };
 
 function encodeDoubleQuotes(str) {
   if (!str) return '';
@@ -30,7 +31,12 @@ router.get('/', (req, res) => {
      ORDER BY id ASC`
   ).all(4, req.session.id);
 
-  res.render('lab08', { post, comments });
+  res.render('lab08', {
+    post, comments,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab08/reset'
+  });
 });
 
 router.post('/comment', (req, res) => {

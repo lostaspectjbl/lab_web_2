@@ -5,6 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title || 'ByteNote — Cybersecurity & Web Technology' %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>
+  /* ── Lab Solved Interceptor ─────────────────────────────────────────────
+     MUST live in <head> so window.alert is overridden BEFORE any inline
+     XSS payload (reflected or stored) in the page body executes.
+     Harmless on non-lab pages (overlay div won't exist).
+     ──────────────────────────────────────────────────────────────────── */
+  (function () {
+    function getFlag() {
+      var pairs = document.cookie.split(';');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].trim();
+        if (pair.indexOf('flag=') === 0) return decodeURIComponent(pair.slice(5));
+      }
+      return null;
+    }
+
+    function showSolved() {
+      var overlay = document.getElementById('lab-solved-overlay');
+      if (!overlay || overlay.classList.contains('visible')) return;
+
+      var flag = getFlag();
+      var flagText = document.getElementById('lab-solved-flag-text');
+      if (flagText) flagText.textContent = flag || '(flag cookie not found — check cookie path)';
+
+      overlay.classList.add('visible');
+      overlay.setAttribute('aria-hidden', 'false');
+
+      var copyBtn = document.getElementById('lab-solved-copy-btn');
+      var copyConfirm = document.getElementById('lab-solved-copy-confirm');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+          var text = flagText ? flagText.textContent : '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              if (copyConfirm) copyConfirm.style.display = 'block';
+              copyBtn.textContent = 'Copied!';
+              copyBtn.classList.add('copied');
+            });
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.top = '-9999px';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            if (copyConfirm) copyConfirm.style.display = 'block';
+            copyBtn.textContent = 'Copied!';
+          }
+        });
+      }
+
+      var dismissBtn = document.getElementById('lab-solved-dismiss');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', function () {
+          overlay.classList.remove('visible');
+          overlay.setAttribute('aria-hidden', 'true');
+        });
+      }
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) {
+          overlay.classList.remove('visible');
+          overlay.setAttribute('aria-hidden', 'true');
+        }
+      });
+    }
+
+    /* Override alert/confirm/prompt BEFORE page body renders */
+    var _nativeAlert = window.alert;
+    window.alert = function (msg) {
+      _nativeAlert.call(window, msg);
+      showSolved();
+    };
+
+    var _nativeConfirm = window.confirm;
+    window.confirm = function (msg) {
+      var r = _nativeConfirm.call(window, msg);
+      showSolved();
+      return r;
+    };
+
+    var _nativePrompt = window.prompt;
+    window.prompt = function (msg, def) {
+      var r = _nativePrompt.call(window, msg, def);
+      showSolved();
+      return r;
+    };
+
+    window.showLabSolved = showSolved;
+  })();
+  </script>
 </head>
 <body>
 

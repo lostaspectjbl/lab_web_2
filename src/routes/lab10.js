@@ -93,6 +93,8 @@ const STOCK_DATA = {
 };
 
 // Lab 10: DOM XSS in document.write inside a select element
+const LAB_META = { num: '10', title: 'DOM XSS — document.write in Select Element' };
+
 router.get('/', (req, res) => {
   res.cookie('flag', config.flags.lab10, {
     httpOnly: false,
@@ -116,8 +118,13 @@ router.get('/', (req, res) => {
     product,
     availableStores: AVAILABLE_STORES,
     storeId,
-    storeStock
+    storeStock,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab10/reset'
   });
 });
+
+router.post('/reset', (req, res) => { res.redirect('/lab10'); });
 
 module.exports = router;

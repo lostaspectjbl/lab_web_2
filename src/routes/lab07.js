@@ -4,6 +4,8 @@ const { db } = require('../db');
 const config = require('../config');
 
 // Lab 07: Reflected XSS into HTML attribute — angle brackets encoded, quotes not
+const LAB_META = { num: '07', title: 'Reflected XSS — HTML Attribute Context' };
+
 function encodeAngleBracketsOnly(str) {
   if (!str) return '';
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -29,7 +31,14 @@ router.get('/', (req, res) => {
   // Angle brackets HTML-encoded, single/double quotes left raw
   const search = encodeAngleBracketsOnly(rawSearch);
 
-  res.render('lab07', { search, posts });
+  res.render('lab07', {
+    search, posts,
+    labNum: LAB_META.num, labTitle: LAB_META.title,
+    sessionId: req.session.id,
+    resetPath: '/lab07/reset'
+  });
 });
+
+router.post('/reset', (req, res) => { res.redirect('/lab07'); });
 
 module.exports = router;
