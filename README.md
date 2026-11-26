@@ -200,3 +200,5 @@ Terinspirasi dari modul XSS pada PortSwigger Web Security Academy, lab ini menya
 ## 🔒 Catatan Keamanan Lingkungan CTF
 - Platform ini **hanya boleh dijalankan di jaringan privat atau lingkungan terisolasi** untuk tujuan edukasi keamanan dan kompetisi CTF.
 - File system container dikunci (`read_only: true`), hanya direktori data SQLite (`/data`) dan `/tmp` yang diizinkan untuk penulisan data.
+# lab_web_2
+# lab_web_2
