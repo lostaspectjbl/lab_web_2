@@ -12,6 +12,7 @@
      Harmless on non-lab pages (overlay div won't exist).
      ──────────────────────────────────────────────────────────────────── */
   (function () {
+    /* ── Flag reader ────────────────────────────────────────────────────── */
     function getFlag() {
       var pairs = document.cookie.split(';');
       for (var i = 0; i < pairs.length; i++) {
@@ -21,18 +22,19 @@
       return null;
     }
 
-    function showSolved() {
+    /* ── Render the modal (called after DOM is ready) ───────────────────── */
+    function renderModal() {
       var overlay = document.getElementById('lab-solved-overlay');
       if (!overlay || overlay.classList.contains('visible')) return;
 
       var flag = getFlag();
       var flagText = document.getElementById('lab-solved-flag-text');
-      if (flagText) flagText.textContent = flag || '(flag cookie not found — check cookie path)';
+      if (flagText) flagText.textContent = flag || '(flag cookie not found)';
 
       overlay.classList.add('visible');
       overlay.setAttribute('aria-hidden', 'false');
 
-      var copyBtn = document.getElementById('lab-solved-copy-btn');
+      var copyBtn     = document.getElementById('lab-solved-copy-btn');
       var copyConfirm = document.getElementById('lab-solved-copy-confirm');
       if (copyBtn) {
         copyBtn.addEventListener('click', function () {
@@ -71,26 +73,42 @@
       });
     }
 
-    /* Override alert/confirm/prompt BEFORE page body renders */
+    /* ── showSolved: safe to call at ANY point during page parse ────────────
+       If the overlay div doesn't exist yet (page still loading), defer
+       until DOMContentLoaded so the modal HTML is in the DOM first.      */
+    var _pendingSolve = false;
+
+    function showSolved() {
+      /* Only run on lab pages (overlay div must be present) */
+      var overlay = document.getElementById('lab-solved-overlay');
+      if (overlay) {
+        /* DOM already has the modal — show immediately */
+        renderModal();
+      } else if (!_pendingSolve) {
+        /* Modal not yet parsed (XSS fired mid-page) — wait for full DOM */
+        _pendingSolve = true;
+        document.addEventListener('DOMContentLoaded', function () {
+          renderModal();
+        });
+      }
+    }
+
+    /* ── Intercept alert — the main XSS detection trigger ───────────────── */
     var _nativeAlert = window.alert;
     window.alert = function (msg) {
       _nativeAlert.call(window, msg);
       showSolved();
     };
 
-    var _nativeConfirm = window.confirm;
-    window.confirm = function (msg) {
-      var r = _nativeConfirm.call(window, msg);
+    /* ── Intercept prompt (some payloads use prompt) ────────────────────── */
+    var _nativePrompt = window.prompt;
+    window.prompt = function (msg, def) {
+      var r = _nativePrompt.call(window, msg === undefined ? '' : msg, def);
       showSolved();
       return r;
     };
 
-    var _nativePrompt = window.prompt;
-    window.prompt = function (msg, def) {
-      var r = _nativePrompt.call(window, msg, def);
-      showSolved();
-      return r;
-    };
+    /* ── DO NOT intercept window.confirm — used by Reset Lab button ─────── */
 
     window.showLabSolved = showSolved;
   })();
